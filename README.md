@@ -116,18 +116,20 @@ Everything is in `Assets/Resources/Data/*.json`. Ids link entries together, and 
 
 ## Art: bodies and faces
 
-Every character has a human-shaped body generated in code (`Visuals/BodyMesh.cs`): a rounded chest, waist and hips,
-a neck, a shaped head with jaw and nose, tapered arms and legs, hands with thumbs, and feet. The skeleton has hips,
-knees, ankles, spine, shoulders, elbows, wrists and neck, so walking bends the knees and swinging a weapon bends the
-elbow. Clothes and armor are fitted over the body (`CharacterRig.Cover`): shirts, waistcoats, breeches, stockings,
-gowns, frock coats, tricorne hats, helmets and boots. Bodies come in builds from slim
-to muscular to giant (`BodyPlan.Slim/Muscular/Giant`, or the `Muscle` value): muscle sculpts pectorals, abdominals,
-lats, trapezius, deltoids, biceps, triceps, forearms, glutes, quads and calves onto the mesh, and broad shoulders taper
-into the waist. The hero is muscular, villagers vary, the Hollowed are gaunt and bosses are hulking giants.
-Creatures use the same skeleton with their own proportions (big-headed hunched Gnarlings, heavy Brutes, tall Giants)
-plus horns, tusks, pointed ears and glowing eyes.
+Humans, villagers and the human-shaped creatures use a **realistic sculpted body**: the MakeHuman base mesh
+(CC0, free for any use, see `Assets/Resources/Humans/LICENSE.txt`) with its professional skin weights. It comes in
+several shapes (`HumanMesh.Slim`, `Average`, `Muscular`, `Giant`, `Female`, `FemaleSlim`), is skinned at runtime to
+the game's skeleton (hips, knees, ankles, spine, shoulders, elbows, wrists, neck), and is animated in code: walking
+bends the knees, attacks bend the elbow, idle breathes and looks around. The hero is muscular, villagers are slim or
+average, the Hollowed are gaunt, Brutes and bosses use the giant build, and Gnarlings and Imps get bigger heads.
+Clothes and armor are fitted by copying the skin over body regions and pushing it outwards (`CharacterRig.Cover`):
+shirts, waistcoats, breeches, stockings, gowns, frock coats, tricorne hats, helmets and boots. Hair grows from the
+scalp. Creatures add horns, tusks, pointed ears, wings and glowing eyes.
 
-The faces are still stylised (eyes, lids, brows, nose, lips, ears, 1700s hair). **Realistic human faces cannot be produced in code. They need real 3D art assets.** Typical options:
+The body data lives in `Assets/Resources/Humans/*.bytes`; `Tools/makehuman_export.py` regenerates it or adds shapes.
+If that folder is missing, the game falls back to simpler code-generated bodies (`Visuals/BodyMesh.cs`).
+
+The sculpted faces are realistic in shape but flat-coloured (no skin textures yet). **Photo-realistic human faces cannot be produced in code. They need real 3D art assets.** Typical options:
 
 - **Reallusion Character Creator 4 + Headshot** (photo to 3D head) exported to FBX with the Unity Auto Setup plugin.
 - **Photogrammetry or scanned heads** (for example from a 3D scan service or a marketplace), retopologised and rigged.
@@ -152,7 +154,7 @@ Assets/Scripts
   World/     VillageBuilder, DungeonBuilder, WeatherSystem, Interactables (bed, tent, campfire, shop, dummy,
              weights, gates, portals, crates), Loot, VillageRaid (villagers, raids)
   UI/        Hud (IMGUI: bars, shop, inventory, death, effects)
-  Visuals/   Prim (primitives/materials), BodyMesh (generated body-part meshes), CharacterRig (bodies, faces, clothes, animation), Effects
+  Visuals/   Prim (primitives/materials), HumanMesh (realistic skinned bodies), BodyMesh (fallback bodies), CharacterRig (rig, faces, clothes, animation), Effects
 ```
 
 ## Not in this slice yet

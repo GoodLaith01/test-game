@@ -42,6 +42,7 @@ namespace Hollowmark.Visuals
         public readonly List<BodyPart> Parts = new List<BodyPart>();
         public float Height = 1.8f;
         public float ArmRoll = 7f; // arms hang slightly away from the body
+        public HumanMesh.Fit Fit;  // set on realistic (sculpted) bodies
 
         // Driven by controllers.
         [HideInInspector] public float MoveSpeed;
@@ -86,6 +87,7 @@ namespace Hollowmark.Visuals
         public List<GameObject> Cover(Color color, float inflate, string name, params BodyRegion[] regions)
         {
             var made = new List<GameObject>();
+            if (Fit != null) { made.Add(HumanMesh.Garment(this, color, inflate, name, regions)); return made; }
             foreach (var part in Parts)
             {
                 if (System.Array.IndexOf(regions, part.Region) < 0) continue;
@@ -322,8 +324,19 @@ namespace Hollowmark.Visuals
                 Muscle = muscle,
             };
 
-            var rig = BuildBody(parent, "HumanRig", height, plan, skin);
-            BuildHumanFace(rig, skin, hair, feminine);
+            CharacterRig rig = null;
+            if (HumanMesh.Available)
+            {
+                string shape = feminine ? (muscle < 0.08f ? HumanMesh.FemaleSlim : HumanMesh.Female)
+                    : muscle < 0.2f ? HumanMesh.Slim : muscle < 0.7f ? HumanMesh.Average : muscle < 1.2f ? HumanMesh.Muscular : HumanMesh.Giant;
+                rig = HumanMesh.Build(parent, "HumanRig", shape, height, skin);
+            }
+            if (rig != null) BuildRealisticFace(rig, hair, feminine);
+            else
+            {
+                rig = BuildBody(parent, "HumanRig", height, plan, skin);
+                BuildHumanFace(rig, skin, hair, feminine);
+            }
 
             Random.state = oldState;
             rig.CollectRenderers();
@@ -357,13 +370,28 @@ namespace Hollowmark.Visuals
             Prim.Shape(BodyMesh.Get(feminine ? "Bun" : "Queue"), h, Vector3.zero, Vector3.one, hair, feminine ? "Bun" : "Queue");
         }
 
+        /// <summary>The sculpted head already has a face; this adds eye colour, brows and 1700s hair.</summary>
+        static void BuildRealisticFace(CharacterRig rig, Color hair, bool feminine)
+        {
+            var h = rig.Skull;
+            HumanMesh.Eyes(rig, EnumUtil.ParseColor(IrisColors[Random.Range(0, IrisColors.Length)], Color.black), rig.Eyes);
+            for (int i = -1; i <= 1; i += 2)
+            {
+                var brow = Prim.Make(PrimitiveType.Sphere, h, new Vector3(i * 0.034f, 0.147f, 0.106f), new Vector3(0.036f, feminine ? 0.005f : 0.008f, 0.01f), hair, "Brow");
+                brow.transform.localRotation = Quaternion.Euler(-12f, 0f, -i * Random.Range(3f, 9f));
+            }
+            HumanMesh.Hair(rig, hair);
+            Prim.Shape(BodyMesh.Get(feminine ? "Bun" : "Queue"), h, Vector3.zero, Vector3.one, hair, feminine ? "Bun" : "Queue");
+        }
+
         /// <summary>Everyday 18th-century clothes: shirt, waistcoat, breeches, stockings and shoes, or a shift and gown.</summary>
         public static void DressVillager(CharacterRig rig, Color main, bool feminine)
         {
             var linen = new Color(0.92f, 0.9f, 0.84f);
             var shoes = new Color(0.12f, 0.09f, 0.07f);
             rig.Cover(linen, 0.006f, "Shirt", BodyRegion.Chest, BodyRegion.UpperArm, BodyRegion.Forearm);
-            rig.Cover(main, 0.013f, feminine ? "Bodice" : "Waistcoat", BodyRegion.Chest);
+            if (feminine) rig.Cover(main, 0.013f, "Bodice", BodyRegion.Chest, BodyRegion.Pelvis);
+            else rig.Cover(main, 0.013f, "Waistcoat", BodyRegion.Chest);
             rig.Cover(shoes, 0.006f, "Shoes", BodyRegion.Foot);
             if (feminine)
             {
@@ -411,8 +439,10 @@ namespace Hollowmark.Visuals
                 plan.Arm *= Random.Range(0.9f, 1.15f);
                 plan.Head *= Random.Range(0.9f, 1.15f);
                 plan.Hunch += Random.Range(0f, 10f);
-                rig = BuildBody(parent, "CreatureRig", height, plan, skin);
-                BuildCreatureFace(rig, shape, skin, dark, eyeColor);
+                rig = HumanMesh.Available ? BuildRealisticCreature(parent, shape, height, build, plan.Hunch, skin) : null;
+                bool realistic = rig != null;
+                if (!realistic) rig = BuildBody(parent, "CreatureRig", height, plan, skin);
+                BuildCreatureFace(rig, shape, skin, dark, eyeColor, realistic);
                 DressCreature(rig, shape, skin, dark, height);
             }
 
@@ -421,12 +451,29 @@ namespace Hollowmark.Visuals
             return rig;
         }
 
-        static void BuildCreatureFace(CharacterRig rig, BodyShape shape, Color skin, Color dark, Color eyeColor)
+        static CharacterRig BuildRealisticCreature(Transform parent, BodyShape shape, float height, float build, float hunch, Color skin)
+        {
+            switch (shape)
+            {
+                case BodyShape.Goblin: return HumanMesh.Build(parent, "CreatureRig", HumanMesh.Slim, height, skin, Random.Range(1.35f, 1.6f), null, hunch);
+                case BodyShape.Imp: return HumanMesh.Build(parent, "CreatureRig", HumanMesh.Slim, height, skin, Random.Range(1.25f, 1.45f), null, hunch);
+                case BodyShape.Brute:
+                    return HumanMesh.Build(parent, "CreatureRig", HumanMesh.Giant, height, skin, Random.Range(0.95f, 1.1f),
+                        new Vector3(1.25f, 1f, 1.2f) * Mathf.Clamp(build, 0.9f, 1.15f), hunch);
+                case BodyShape.Giant:
+                    return HumanMesh.Build(parent, "CreatureRig", build < 0.85f ? HumanMesh.Muscular : HumanMesh.Giant, height, skin, 0.95f,
+                        build > 1.1f ? (Vector3?)new Vector3(build, 1f, build) : null, hunch);
+                default: return HumanMesh.Build(parent, "CreatureRig", HumanMesh.Slim, height, skin, 1f, null, hunch);
+            }
+        }
+
+        static void BuildCreatureFace(CharacterRig rig, BodyShape shape, Color skin, Color dark, Color eyeColor, bool realistic)
         {
             var h = rig.Skull;
             var bone = new Color(0.85f, 0.8f, 0.65f);
             int eyeCount = Random.value < 0.2f ? 3 : (Random.value < 0.08f ? 1 : 2);
             float eyeSize = Random.Range(0.018f, 0.028f) * (eyeCount == 1 ? 1.6f : 1f);
+            if (realistic && eyeCount == 2) { HumanMesh.Eyes(rig, eyeColor, rig.Eyes, true, eyeSize / 0.012f); eyeCount = 0; }
             for (int i = 0; i < eyeCount; i++)
             {
                 Vector3 pos;
@@ -438,8 +485,8 @@ namespace Hollowmark.Visuals
                 rig.Eyes.Add(eye.GetComponent<Renderer>());
             }
             // A heavy brow ridge and a wide dark mouth make every creature read as hostile.
-            Prim.Make(PrimitiveType.Sphere, h, new Vector3(0f, 0.146f, 0.098f), new Vector3(0.11f, 0.02f, 0.03f), skin * 0.9f, "BrowRidge");
-            Prim.Make(PrimitiveType.Sphere, h, new Vector3(0f, 0.055f, 0.102f), new Vector3(Random.Range(0.05f, 0.075f), 0.014f, 0.02f), new Color(0.15f, 0.04f, 0.04f), "Mouth");
+            Prim.Make(PrimitiveType.Sphere, h, new Vector3(0f, 0.146f, realistic ? 0.104f : 0.098f), new Vector3(0.11f, 0.02f, 0.03f), skin * 0.9f, "BrowRidge");
+            Prim.Make(PrimitiveType.Sphere, h, new Vector3(0f, 0.055f, realistic ? 0.108f : 0.102f), new Vector3(Random.Range(0.05f, 0.075f), 0.014f, 0.02f), new Color(0.15f, 0.04f, 0.04f), "Mouth");
 
             switch (shape)
             {
@@ -453,7 +500,7 @@ namespace Hollowmark.Visuals
                     break;
                 }
                 default:
-                    Prim.Shape(BodyMesh.Get("Nose"), h, Vector3.zero, Vector3.one, skin * 0.9f, "Nose");
+                    if (!realistic) Prim.Shape(BodyMesh.Get("Nose"), h, Vector3.zero, Vector3.one, skin * 0.9f, "Nose");
                     break;
             }
 
@@ -483,14 +530,18 @@ namespace Hollowmark.Visuals
                     ear.transform.localRotation = Quaternion.Euler(-15f, 0f, -i * Random.Range(60f, 85f));
                 }
             }
-            else
+            else if (!realistic)
             {
                 for (int i = -1; i <= 1; i += 2)
                     Prim.Make(PrimitiveType.Sphere, h, new Vector3(i * 0.078f, 0.115f, -0.005f), new Vector3(0.016f, 0.05f, 0.034f), skin * 0.95f, "Ear");
             }
 
             if ((shape == BodyShape.Humanoid || shape == BodyShape.Giant) && Random.value < 0.6f)
-                Prim.Shape(BodyMesh.Get("Hair"), h, Vector3.zero, Vector3.one, Prim.Vary(new Color(0.25f, 0.24f, 0.22f), 0.3f), "Hair");
+            {
+                var hairColor = Prim.Vary(new Color(0.25f, 0.24f, 0.22f), 0.3f);
+                if (realistic) HumanMesh.Hair(rig, hairColor);
+                else Prim.Shape(BodyMesh.Get("Hair"), h, Vector3.zero, Vector3.one, hairColor, "Hair");
+            }
         }
 
         static void DressCreature(CharacterRig rig, BodyShape shape, Color skin, Color dark, float height)
