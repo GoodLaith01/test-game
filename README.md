@@ -120,8 +120,12 @@ Every character has a human-shaped body generated in code (`Visuals/BodyMesh.cs`
 a neck, a shaped head with jaw and nose, tapered arms and legs, hands with thumbs, and feet. The skeleton has hips,
 knees, ankles, spine, shoulders, elbows, wrists and neck, so walking bends the knees and swinging a weapon bends the
 elbow. Clothes and armor are fitted over the body (`CharacterRig.Cover`): shirts, waistcoats, breeches, stockings,
-gowns, frock coats, tricorne hats, helmets and boots. Creatures use the same skeleton with their own proportions
-(big-headed hunched Gnarlings, heavy Brutes, tall Giants) plus horns, tusks, pointed ears and glowing eyes.
+gowns, frock coats, tricorne hats, helmets and boots. Bodies come in builds from slim
+to muscular to giant (`BodyPlan.Slim/Muscular/Giant`, or the `Muscle` value): muscle sculpts pectorals, abdominals,
+lats, trapezius, deltoids, biceps, triceps, forearms, glutes, quads and calves onto the mesh, and broad shoulders taper
+into the waist. The hero is muscular, villagers vary, the Hollowed are gaunt and bosses are hulking giants.
+Creatures use the same skeleton with their own proportions (big-headed hunched Gnarlings, heavy Brutes, tall Giants)
+plus horns, tusks, pointed ears and glowing eyes.
 
 The faces are still stylised (eyes, lids, brows, nose, lips, ears, 1700s hair). **Realistic human faces cannot be produced in code. They need real 3D art assets.** Typical options:
 

@@ -23,7 +23,7 @@ namespace Hollowmark.Player
         {
             stats = GetComponent<PlayerStats>();
             Color skin;
-            Rig = CharacterBuilder.BuildHuman(transform, 1.8f, 1700, out skin);
+            Rig = CharacterBuilder.BuildHuman(transform, 1.8f, 1700, out skin, false, 0.85f); // an adventurer's muscular build
 
             // Smallclothes, always worn under everything else.
             underwear = Rig.Cover(new Color(0.96f, 0.95f, 0.9f), 0.005f, "Underwear", BodyRegion.Pelvis);

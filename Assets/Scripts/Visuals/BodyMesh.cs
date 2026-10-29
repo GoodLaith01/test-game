@@ -19,7 +19,7 @@ namespace Hollowmark.Visuals
         {
             new Vector4(-0.10f, 0.03f, 0.03f, 0f), new Vector4(-0.08f, 0.11f, 0.08f, 0f),
             new Vector4(-0.04f, 0.155f, 0.105f, -0.005f), new Vector4(0.02f, 0.162f, 0.11f, -0.01f),
-            new Vector4(0.08f, 0.148f, 0.1f, 0f), new Vector4(0.16f, 0.135f, 0.095f, 0f),
+            new Vector4(0.08f, 0.148f, 0.1f, 0f), new Vector4(0.15f, 0.132f, 0.092f, 0f), new Vector4(0.2f, 0.11f, 0.08f, 0f),
         };
         static readonly Vector4[] ChestRings =
         {
@@ -136,24 +136,123 @@ namespace Hollowmark.Visuals
             new Vector4(0.38f, 0.32f, 0.26f, 0f), new Vector4(0.5f, 0.08f, 0.08f, 0f),
         };
 
+        /// <summary>
+        /// A muscle: a smooth swelling of the surface centred at height y and angle a around the part
+        /// (a = 90 degrees is the front, 270 the back, 0 the +x side), as a fraction of the local radius.
+        /// </summary>
+        struct Muscle
+        {
+            public float y, yWidth, angle, angleWidth, amount;
+            public Muscle(float y, float yWidth, float angleDeg, float angleWidthDeg, float amount)
+            {
+                this.y = y; this.yWidth = yWidth; angle = angleDeg * Mathf.Deg2Rad; angleWidth = angleWidthDeg * Mathf.Deg2Rad; this.amount = amount;
+            }
+        }
+
+        // Anatomy, sculpted onto the rings for muscular bodies. Pairs are mirrored left and right.
+        static readonly Muscle[] ChestMuscles =
+        {
+            new Muscle(0.415f, 0.05f, 64f, 22f, 0.2f), new Muscle(0.415f, 0.05f, 116f, 22f, 0.2f),     // pectorals
+            new Muscle(0.17f, 0.024f, 80f, 9f, 0.08f), new Muscle(0.17f, 0.024f, 100f, 9f, 0.08f),        // abdominals
+            new Muscle(0.23f, 0.024f, 80f, 9f, 0.085f), new Muscle(0.23f, 0.024f, 100f, 9f, 0.085f),
+            new Muscle(0.29f, 0.024f, 80f, 9f, 0.09f), new Muscle(0.29f, 0.024f, 100f, 9f, 0.09f),
+            new Muscle(0.35f, 0.07f, 0f, 22f, 0.1f), new Muscle(0.35f, 0.07f, 180f, 22f, 0.1f),         // lats
+            new Muscle(0.53f, 0.035f, 245f, 30f, 0.12f), new Muscle(0.53f, 0.035f, 295f, 30f, 0.12f),    // trapezius
+            new Muscle(0.43f, 0.05f, 240f, 20f, 0.06f), new Muscle(0.43f, 0.05f, 300f, 20f, 0.06f),      // shoulder blades
+            new Muscle(0.5f, 0.04f, 0f, 18f, 0.07f), new Muscle(0.5f, 0.04f, 180f, 18f, 0.07f),          // front of the deltoids
+        };
+        static readonly Muscle[] PelvisMuscles =
+        {
+            new Muscle(0.0f, 0.06f, 245f, 25f, 0.08f), new Muscle(0.0f, 0.06f, 295f, 25f, 0.08f),        // glutes
+            new Muscle(0.09f, 0.04f, 30f, 18f, 0.04f), new Muscle(0.09f, 0.04f, 150f, 18f, 0.04f),       // obliques
+        };
+        static readonly Muscle[] NeckMuscles =
+        {
+            new Muscle(0.6f, 0.04f, 50f, 18f, 0.08f), new Muscle(0.6f, 0.04f, 130f, 18f, 0.08f),
+        };
+        static readonly Muscle[] UpperArmMuscles =
+        {
+            new Muscle(-0.04f, 0.05f, 0f, 70f, 0.18f), new Muscle(-0.04f, 0.05f, 180f, 70f, 0.18f),     // deltoid cap
+            new Muscle(-0.15f, 0.06f, 90f, 35f, 0.22f),                                                  // biceps
+            new Muscle(-0.11f, 0.07f, 270f, 35f, 0.15f),                                                 // triceps
+        };
+        static readonly Muscle[] ForearmMuscles =
+        {
+            new Muscle(-0.05f, 0.05f, 90f, 50f, 0.16f), new Muscle(-0.06f, 0.05f, 270f, 45f, 0.06f),
+        };
+        static readonly Muscle[] ThighMuscles =
+        {
+            new Muscle(-0.2f, 0.1f, 90f, 40f, 0.14f),                                                     // quadriceps
+            new Muscle(-0.34f, 0.04f, 90f, 50f, 0.06f),                                                  // above the knee
+            new Muscle(-0.15f, 0.08f, 270f, 40f, 0.07f),                                                 // hamstrings
+        };
+        static readonly Muscle[] ShinMuscles =
+        {
+            new Muscle(-0.11f, 0.06f, 250f, 22f, 0.18f), new Muscle(-0.11f, 0.06f, 290f, 22f, 0.18f),   // calves
+            new Muscle(-0.12f, 0.06f, 90f, 22f, 0.04f),
+        };
+
+        static readonly Muscle[] TrunkMuscles = Concat(ChestMuscles, PelvisMuscles);
+
+        static Muscle[] Concat(Muscle[] a, Muscle[] b)
+        {
+            var all = new Muscle[a.Length + b.Length];
+            a.CopyTo(all, 0); b.CopyTo(all, a.Length);
+            return all;
+        }
+
+        static Muscle[] MusclesFor(string key)
+        {
+            switch (key)
+            {
+                case "Chest": return ChestMuscles;
+                case "Trunk": return TrunkMuscles;
+                case "Pelvis": return PelvisMuscles;
+                case "Neck": return NeckMuscles;
+                case "UpperArm": return UpperArmMuscles;
+                case "Forearm": return ForearmMuscles;
+                case "Thigh": return ThighMuscles;
+                case "Shin": return ShinMuscles;
+                default: return null;
+            }
+        }
+
         static readonly Dictionary<string, Mesh> cache = new Dictionary<string, Mesh>();
 
-        /// <summary>The shared mesh for a body region, optionally inflated outwards (for clothes and armor).</summary>
-        public static Mesh Get(BodyRegion region, float inflate = 0f) { return Get(region.ToString(), inflate); }
-
-        public static Mesh Get(string key, float inflate = 0f)
+        /// <summary>
+        /// The shared mesh for a body region, optionally inflated outwards (for clothes and armor).
+        /// muscle 0 is a slim body, 1 a strongly muscled one with sculpted chest, abs, shoulders, arms and legs.
+        /// </summary>
+        /// shoulders widens the chest towards the top only, so broad shoulders taper into a normal waist.
+        public static Mesh Get(BodyRegion region, float inflate = 0f, float muscle = 0f, float shoulders = 1f)
         {
-            string id = key + "/" + Mathf.RoundToInt(inflate * 10000f);
+            return Get(region.ToString(), inflate, muscle, shoulders);
+        }
+
+        public static Mesh Get(string key, float inflate = 0f, float muscle = 0f, float shoulders = 1f)
+        {
+            var muscles = MusclesFor(key);
+            muscle = muscles == null ? 0f : Mathf.Round(Mathf.Clamp(muscle, 0f, 1.5f) * 10f) / 10f;
+            shoulders = key == "Chest" || key == "Trunk" ? Mathf.Round(Mathf.Clamp(shoulders, 0.7f, 1.6f) * 20f) / 20f : 1f;
+            string id = key + "/" + Mathf.RoundToInt(inflate * 10000f) + "/" + Mathf.RoundToInt(muscle * 10f) + "/" + Mathf.RoundToInt(shoulders * 20f);
             Mesh mesh;
             if (cache.TryGetValue(id, out mesh) && mesh != null) return mesh;
 
-            var b = new Builder();
-            var down = Quaternion.identity;
+            var b = new Builder { Muscles = muscles, Strength = muscle, Shoulders = shoulders };
             var forward = Quaternion.Euler(90f, 0f, 0f);
             switch (key)
             {
                 case "Pelvis": b.Loft(PelvisRings, 2.3f, inflate); break;
                 case "Chest": b.Loft(ChestRings, 2.5f, inflate); break;
+                case "Trunk":
+                {
+                    // Pelvis and chest as one seamless skin; clothes still fit the two halves separately.
+                    var rings = new List<Vector4>();
+                    foreach (var r in PelvisRings) if (r.x < 0.1f) rings.Add(r);
+                    rings.AddRange(ChestRings);
+                    b.Loft(rings.ToArray(), 2.4f, inflate);
+                    break;
+                }
                 case "Neck": b.Loft(NeckRings, 2f, inflate); break;
                 case "Head": b.Loft(HeadRings, 2.1f, inflate); break;
                 case "UpperArm": b.Loft(UpperArmRings, 2f, inflate); break;
@@ -204,7 +303,9 @@ namespace Hollowmark.Visuals
 
         class Builder
         {
-            const int Sides = 16, Subdiv = 3;
+            const int Sides = 24, Subdiv = 5;
+            public Muscle[] Muscles;
+            public float Strength, Shoulders = 1f;
             readonly List<Vector3> verts = new List<Vector3>();
             readonly List<int> tris = new List<int>();
 
@@ -215,6 +316,19 @@ namespace Hollowmark.Visuals
             }
 
             static float SuperAxis(float c, float power) { return Mathf.Sign(c) * Mathf.Pow(Mathf.Abs(c), 2f / power); }
+
+            float Swell(float y, float angle)
+            {
+                if (Muscles == null || Strength <= 0f) return 1f;
+                float sum = 0f;
+                foreach (var m in Muscles)
+                {
+                    float dy = (y - m.y) / m.yWidth;
+                    float da = Mathf.Atan2(Mathf.Sin(angle - m.angle), Mathf.Cos(angle - m.angle)) / m.angleWidth;
+                    sum += m.amount * Mathf.Exp(-(dy * dy + da * da));
+                }
+                return 1f + Strength * sum;
+            }
 
             public void Loft(Vector4[] rings, float power, float inflate) { Loft(rings, power, inflate, Quaternion.identity, Vector3.zero); }
 
@@ -238,8 +352,10 @@ namespace Hollowmark.Visuals
                     for (int j = 0; j < Sides; j++)
                     {
                         float a = j * Mathf.PI * 2f / Sides;
-                        float x = SuperAxis(Mathf.Cos(a), power) * (r.y + inflate);
-                        float z = SuperAxis(Mathf.Sin(a), power) * (r.z + inflate) + r.w;
+                        float swell = Swell(r.x, a);
+                        float widen = Mathf.Lerp(1f, Shoulders, Mathf.SmoothStep(0f, 1f, (r.x - 0.18f) / 0.3f));
+                        float x = SuperAxis(Mathf.Cos(a), power) * (r.y * swell * widen + inflate);
+                        float z = SuperAxis(Mathf.Sin(a), power) * (r.z * swell + inflate) + r.w;
                         verts.Add(orient * new Vector3(x, r.x, z) + offset);
                     }
                 int ringCount = smooth.Count;

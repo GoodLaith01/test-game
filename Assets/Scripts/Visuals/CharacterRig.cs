@@ -10,12 +10,20 @@ namespace Hollowmark.Visuals
         public BodyRegion Region;
         public Transform Pivot;
         public Vector3 Position, Scale;
+        public float Muscle, Shoulders = 1f;
     }
 
-    /// <summary>Proportions of a body, relative to an average 1.8 m human (1 = normal).</summary>
+    /// <summary>
+    /// Proportions of a body, relative to an average 1.8 m human (1 = normal). Muscle runs from 0 (slim)
+    /// through 1 (muscular, with sculpted chest, abs, shoulders, arms and legs) to 1.5 (a hulking giant).
+    /// </summary>
     public class BodyPlan
     {
-        public float Leg = 1f, Arm = 1f, Torso = 1f, Bulk = 1f, Shoulders = 1f, Head = 1f, Hunch = 0f;
+        public float Leg = 1f, Arm = 1f, Torso = 1f, Bulk = 1f, Shoulders = 1f, Head = 1f, Hunch = 0f, Muscle = 0.3f;
+
+        public static BodyPlan Slim() { return new BodyPlan { Bulk = 0.9f, Shoulders = 0.96f, Muscle = 0.1f }; }
+        public static BodyPlan Muscular() { return new BodyPlan { Bulk = 1.05f, Shoulders = 1.1f, Muscle = 1f }; }
+        public static BodyPlan Giant() { return new BodyPlan { Arm = 1.08f, Torso = 1.05f, Bulk = 1.2f, Shoulders = 1.2f, Head = 0.92f, Muscle = 1.4f }; }
     }
 
     /// <summary>
@@ -81,7 +89,7 @@ namespace Hollowmark.Visuals
             foreach (var part in Parts)
             {
                 if (System.Array.IndexOf(regions, part.Region) < 0) continue;
-                made.Add(Prim.Shape(BodyMesh.Get(part.Region, inflate), part.Pivot, part.Position, part.Scale, color, name));
+                made.Add(Prim.Shape(BodyMesh.Get(part.Region, inflate, part.Muscle, part.Shoulders), part.Pivot, part.Position, part.Scale, color, name));
             }
             return made;
         }
@@ -226,10 +234,10 @@ namespace Hollowmark.Visuals
             return t;
         }
 
-        static void AddPart(CharacterRig rig, BodyRegion region, Transform pivot, Vector3 scale, Color color)
+        static void AddPart(CharacterRig rig, BodyRegion region, Transform pivot, Vector3 scale, Color color, float muscle, float shoulders = 1f, bool visible = true)
         {
-            Prim.Shape(BodyMesh.Get(region), pivot, Vector3.zero, scale, color, region.ToString());
-            rig.Parts.Add(new BodyPart { Region = region, Pivot = pivot, Position = Vector3.zero, Scale = scale });
+            if (visible) Prim.Shape(BodyMesh.Get(region, 0f, muscle, shoulders), pivot, Vector3.zero, scale, color, region.ToString());
+            rig.Parts.Add(new BodyPart { Region = region, Pivot = pivot, Position = Vector3.zero, Scale = scale, Muscle = muscle, Shoulders = shoulders });
         }
 
         /// <summary>
@@ -253,20 +261,22 @@ namespace Hollowmark.Visuals
             {
                 float side = i == 0 ? -1f : 1f;
                 var hip = Pivot(rig.Body, i == 0 ? "LegL" : "LegR", new Vector3(side * 0.095f * s * b, hipY, 0f));
-                AddPart(rig, BodyRegion.Thigh, hip, legScale, skin);
+                AddPart(rig, BodyRegion.Thigh, hip, legScale, skin, plan.Muscle);
                 var knee = Pivot(hip, "Knee", new Vector3(0f, -0.43f * s * plan.Leg, 0f));
-                AddPart(rig, BodyRegion.Shin, knee, legScale, skin);
+                AddPart(rig, BodyRegion.Shin, knee, legScale, skin, plan.Muscle);
                 var ankle = Pivot(knee, "Ankle", new Vector3(0f, -0.42f * s * plan.Leg, 0f));
-                AddPart(rig, BodyRegion.Foot, ankle, new Vector3(s * sb, s * plan.Leg, s * sb), skin);
+                AddPart(rig, BodyRegion.Foot, ankle, new Vector3(s * sb, s * plan.Leg, s * sb), skin, plan.Muscle);
                 rig.Legs.Add(hip);
                 rig.Knees.Add(knee);
             }
 
             rig.Torso = Pivot(rig.Body, "Torso", new Vector3(0f, hipY, 0f));
             rig.Torso.localRotation = Quaternion.Euler(plan.Hunch, 0f, 0f);
-            AddPart(rig, BodyRegion.Pelvis, rig.Torso, new Vector3(s * b, s * plan.Torso, s * b), skin);
-            AddPart(rig, BodyRegion.Chest, rig.Torso, new Vector3(s * b * plan.Shoulders, s * plan.Torso, s * b), skin);
-            AddPart(rig, BodyRegion.Neck, rig.Torso, new Vector3(s * sb, s * plan.Torso, s * sb), skin);
+            var trunkScale = new Vector3(s * b, s * plan.Torso, s * b);
+            Prim.Shape(BodyMesh.Get("Trunk", 0f, plan.Muscle, plan.Shoulders), rig.Torso, Vector3.zero, trunkScale, skin, "Trunk");
+            AddPart(rig, BodyRegion.Pelvis, rig.Torso, trunkScale, skin, plan.Muscle, 1f, false);
+            AddPart(rig, BodyRegion.Chest, rig.Torso, trunkScale, skin, plan.Muscle, plan.Shoulders, false);
+            AddPart(rig, BodyRegion.Neck, rig.Torso, new Vector3(s * sb, s * plan.Torso, s * sb), skin, plan.Muscle);
 
             var armScale = new Vector3(s * b, s * plan.Arm, s * b);
             for (int i = 0; i < 2; i++)
@@ -274,12 +284,12 @@ namespace Hollowmark.Visuals
                 float side = i == 0 ? -1f : 1f;
                 var shoulder = Pivot(rig.Torso, i == 0 ? "ArmL" : "ArmR", new Vector3(side * 0.19f * s * b * plan.Shoulders, 0.51f * s * plan.Torso, 0f));
                 shoulder.localRotation = Quaternion.Euler(0f, 0f, side * rig.ArmRoll);
-                AddPart(rig, BodyRegion.UpperArm, shoulder, armScale, skin);
+                AddPart(rig, BodyRegion.UpperArm, shoulder, armScale, skin, plan.Muscle);
                 var elbow = Pivot(shoulder, "Elbow", new Vector3(0f, -0.29f * s * plan.Arm, 0f));
                 elbow.localRotation = Quaternion.Euler(-12f, 0f, 0f);
-                AddPart(rig, BodyRegion.Forearm, elbow, armScale, skin);
+                AddPart(rig, BodyRegion.Forearm, elbow, armScale, skin, plan.Muscle);
                 var wrist = Pivot(elbow, "Wrist", new Vector3(0f, -0.25f * s * plan.Arm, 0f));
-                AddPart(rig, BodyRegion.Hand, wrist, new Vector3(s * sb, s, s * sb), skin);
+                AddPart(rig, BodyRegion.Hand, wrist, new Vector3(s * sb, s, s * sb), skin, plan.Muscle);
                 if (i == 0) { rig.LeftArm = shoulder; rig.LeftElbow = elbow; }
                 else { rig.RightArm = shoulder; rig.RightElbow = elbow; rig.Hand = Pivot(wrist, "Grip", new Vector3(0f, -0.085f * s, 0.01f * s)); }
             }
@@ -287,23 +297,29 @@ namespace Hollowmark.Visuals
             rig.Head = Pivot(rig.Torso, "Head", new Vector3(0f, 0.64f * s * plan.Torso, 0f));
             rig.Skull = Pivot(rig.Head, "Skull", Vector3.zero);
             rig.Skull.localScale = Vector3.one * s * plan.Head;
-            AddPart(rig, BodyRegion.Head, rig.Skull, Vector3.one, skin);
+            AddPart(rig, BodyRegion.Head, rig.Skull, Vector3.one, skin, plan.Muscle);
             return rig;
         }
 
-        /// <summary>A human (player or villager) with a seeded face, hair and build. Dress it with rig.Cover or DressVillager.</summary>
-        public static CharacterRig BuildHuman(Transform parent, float height, int seed, out Color skin, bool feminine = false)
+        /// <summary>
+        /// A human (player or villager) with a seeded face, hair and build. muscle: 0 slim, 1 muscular, or below 0
+        /// to pick an everyday build from the seed. Dress it with rig.Cover or DressVillager.
+        /// </summary>
+        public static CharacterRig BuildHuman(Transform parent, float height, int seed, out Color skin, bool feminine = false, float muscle = -1f)
         {
             var oldState = Random.state;
             Random.InitState(seed);
             skin = EnumUtil.ParseColor(SkinTones[Random.Range(0, SkinTones.Length)], Color.white);
             var hair = EnumUtil.ParseColor(HairColors[Random.Range(0, HairColors.Length)], Color.black);
+            if (muscle < 0f) muscle = Random.Range(0f, 0.6f);
+            if (feminine) muscle = Mathf.Min(muscle, 0.15f);
             var plan = new BodyPlan
             {
-                Bulk = Random.Range(0.92f, 1.1f) * (feminine ? 0.93f : 1f),
-                Shoulders = Random.Range(0.96f, 1.05f) * (feminine ? 0.9f : 1f),
+                Bulk = Random.Range(0.92f, 1.08f) * (feminine ? 0.93f : 1f) * (1f + 0.05f * muscle),
+                Shoulders = Random.Range(0.96f, 1.04f) * (feminine ? 0.9f : 1f) * (1f + 0.1f * muscle),
                 Head = Random.Range(0.97f, 1.03f),
                 Leg = Random.Range(0.97f, 1.03f),
+                Muscle = muscle,
             };
 
             var rig = BuildBody(parent, "HumanRig", height, plan, skin);
@@ -366,11 +382,11 @@ namespace Hollowmark.Visuals
         {
             switch (shape)
             {
-                case BodyShape.Goblin: typicalWidth = 0.5f; return new BodyPlan { Leg = 0.8f, Arm = 1.2f, Torso = 0.95f, Bulk = 0.85f, Shoulders = 0.95f, Head = 1.6f, Hunch = 18f };
-                case BodyShape.Imp: typicalWidth = 0.53f; return new BodyPlan { Leg = 0.85f, Arm = 1.1f, Torso = 0.9f, Bulk = 0.75f, Head = 1.5f, Hunch = 8f };
-                case BodyShape.Brute: typicalWidth = 0.81f; return new BodyPlan { Leg = 0.75f, Arm = 1.25f, Torso = 1.05f, Bulk = 1.6f, Shoulders = 1.35f, Head = 1.15f, Hunch = 22f };
-                case BodyShape.Giant: typicalWidth = 0.48f; return new BodyPlan { Arm = 1.1f, Torso = 1.05f, Bulk = 1.15f, Shoulders = 1.15f, Head = 0.95f, Hunch = 6f };
-                default: typicalWidth = 0.37f; return new BodyPlan { Arm = 1.05f, Bulk = 0.85f, Hunch = 10f }; // Humanoid: gaunt
+                case BodyShape.Goblin: typicalWidth = 0.5f; return new BodyPlan { Leg = 0.8f, Arm = 1.2f, Torso = 0.95f, Bulk = 0.85f, Shoulders = 0.95f, Head = 1.6f, Hunch = 18f, Muscle = 0.5f };
+                case BodyShape.Imp: typicalWidth = 0.53f; return new BodyPlan { Leg = 0.85f, Arm = 1.1f, Torso = 0.9f, Bulk = 0.75f, Head = 1.5f, Hunch = 8f, Muscle = 0.4f };
+                case BodyShape.Brute: typicalWidth = 0.81f; return new BodyPlan { Leg = 0.75f, Arm = 1.25f, Torso = 1.05f, Bulk = 1.6f, Shoulders = 1.35f, Head = 1.15f, Hunch = 22f, Muscle = 1.2f };
+                case BodyShape.Giant: typicalWidth = 0.48f; var giant = BodyPlan.Giant(); giant.Hunch = 6f; return giant;
+                default: typicalWidth = 0.37f; return new BodyPlan { Arm = 1.05f, Bulk = 0.85f, Hunch = 10f, Muscle = 0f }; // Humanoid: gaunt
             }
         }
 
@@ -389,7 +405,9 @@ namespace Hollowmark.Visuals
             {
                 float typical;
                 var plan = CreaturePlan(shape, out typical);
-                plan.Bulk *= Mathf.Clamp((width / height) / typical, 0.75f, 1.35f);
+                float build = Mathf.Clamp((width / height) / typical, 0.75f, 1.35f);
+                plan.Bulk *= build;
+                plan.Muscle *= Mathf.Clamp(build, 0.6f, 1.1f); // thin bosses are wiry, broad ones hulking
                 plan.Arm *= Random.Range(0.9f, 1.15f);
                 plan.Head *= Random.Range(0.9f, 1.15f);
                 plan.Hunch += Random.Range(0f, 10f);
