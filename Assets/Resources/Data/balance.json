@@ -1,0 +1,39 @@
+{
+  "gameMinutesPerSecond": 2,
+  "startHour": 8,
+  "startGold": 120,
+  "startWeapon": "hanger",
+  "startArmor": ["wool_coat", "breeches", "tricorne"],
+  "startItems": ["bread", "bread", "water_flask", "water_flask", "bandage"],
+
+  "baseHealth": 100,
+  "baseStamina": 100,
+  "staminaRegenPerSecond": 18,
+  "sprintStaminaPerSecond": 14,
+  "rollStaminaCost": 22,
+  "blockStaminaPerHit": 12,
+  "walkSpeed": 4.2,
+  "sprintSpeed": 7,
+
+  "hungerPerGameHour": 3.5,
+  "thirstPerGameHour": 5,
+  "starvingDamagePerSecond": 0.8,
+  "dehydratedDamagePerSecond": 1.2,
+
+  "hoursAwakeBeforeInsanity": 16,
+  "insanityPerGameHour": 6,
+  "insanityDamagePerSecond": 1.5,
+  "sleepInsanityRecoveryPerHour": 12,
+
+  "comfortableMin": 8,
+  "comfortableMax": 28,
+  "temperatureDamagePerSecond": 0.6,
+
+  "underwearDamageMultiplier": 1.6,
+  "armorWearPerDamage": 0.6,
+
+  "threatPerGameDay": 20,
+  "raidThreshold": 100,
+  "threatAfterRaid": 40,
+  "deathGoldLoss": 0.5
+}
