@@ -27,6 +27,7 @@ namespace Hollowmark.Enemies
         protected float stamina;
         protected float verticalSpeed;
         protected Vector3 home;
+        float strafePhase = Random.Range(0f, 100f);
         float recoverUntil;
         float stunUntil;
         bool ambushReady;
@@ -135,7 +136,7 @@ namespace Hollowmark.Enemies
                         Vector3 move = Vector3.zero;
                         if (dist < Def.preferredDistance - 1.5f) move = -to.normalized;
                         else if (dist > Def.preferredDistance + 1.5f) move = to.normalized;
-                        move += Vector3.Cross(Vector3.up, to.normalized) * Mathf.Sin(Time.time + GetInstanceID()) * 0.6f;
+                        move += Vector3.Cross(Vector3.up, to.normalized) * Mathf.Sin(Time.time + strafePhase) * 0.6f;
                         Move(move * Def.moveSpeed);
                         if (dist < Def.attackRange && Time.time >= nextAttack) StartAttack();
                     }
