@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 namespace Hollowmark.Visuals
 {
     /// <summary>
-    /// Placeholder-art helpers: every mesh in the slice is a Unity primitive with a flat-coloured material.
+    /// Art helpers: Unity primitives and generated meshes with flat-coloured materials.
     /// Works with the Built-in pipeline (Standard shader) and falls back to URP/HDRP Lit if a pipeline is active.
     /// </summary>
     public static class Prim
@@ -108,6 +108,20 @@ namespace Hollowmark.Visuals
                 var col = go.GetComponent<Collider>();
                 if (col != null) Object.DestroyImmediate(col); // immediate, so it can never block the frame it was built in
             }
+            return go;
+        }
+
+        /// <summary>Like Make, but with a generated mesh (see BodyMesh) instead of a primitive.</summary>
+        public static GameObject Shape(Mesh mesh, Transform parent, Vector3 localPos, Vector3 localScale, Color color, string name, bool glow = false)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = localPos;
+            go.transform.localScale = localScale;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = Mat(color, glow);
+            if (glow) r.shadowCastingMode = ShadowCastingMode.Off;
             return go;
         }
 

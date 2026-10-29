@@ -180,8 +180,7 @@ namespace Hollowmark.World
             var keeperRig = Visuals.CharacterBuilder.BuildHuman(t, 1.75f, seed, out skin);
             keeperRig.transform.localPosition = new Vector3(0f, 0f, 1.2f);
             keeperRig.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
-            Prim.Make(PrimitiveType.Cube, keeperRig.Body, new Vector3(0f, 1.23f, 0f), new Vector3(0.5f, 0.68f, 0.3f), Prim.Vary(awning, 0.2f), "Apron");
-            Prim.Make(PrimitiveType.Cube, keeperRig.Body, new Vector3(0f, 0.6f, 0f), new Vector3(0.48f, 0.6f, 0.28f), new Color(0.3f, 0.25f, 0.2f), "Breeches");
+            Visuals.CharacterBuilder.DressVillager(keeperRig, Prim.Vary(awning, 0.2f), false);
 
             var trigger = stall.AddComponent<BoxCollider>();
             trigger.isTrigger = true;
