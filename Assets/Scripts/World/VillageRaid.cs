@@ -13,6 +13,7 @@ namespace Hollowmark.World
     public class Villager : MonoBehaviour
     {
         static readonly string[] Names = { "Old Tom", "Martha", "Young Will", "Goodwife Ann", "Silas the Cooper", "Ezra", "Prudence", "Josiah" };
+        static readonly bool[] Feminine = { false, true, false, true, false, false, true, false };
         public string VillagerName;
         public CharacterRig Rig;
         Vector3 home, target;
@@ -24,10 +25,9 @@ namespace Hollowmark.World
             go.transform.SetParent(root, false);
             go.transform.localPosition = pos;
             Color skin;
-            var rig = CharacterBuilder.BuildHuman(go.transform, Random.Range(1.6f, 1.85f), seed, out skin);
-            var coat = Prim.Vary(new Color(0.4f, 0.3f, 0.25f), 0.3f);
-            Prim.Make(PrimitiveType.Cube, rig.Body, new Vector3(0f, 1.23f, 0f), new Vector3(0.5f, 0.68f, 0.3f) * (rig.Height / 1.8f), coat, "Coat");
-            Prim.Make(PrimitiveType.Cube, rig.Body, new Vector3(0f, 0.6f, 0f), new Vector3(0.48f, 0.6f, 0.28f) * (rig.Height / 1.8f), coat * 0.7f, "Breeches");
+            bool feminine = Feminine[seed % Names.Length];
+            var rig = CharacterBuilder.BuildHuman(go.transform, Random.Range(1.6f, 1.85f) * (feminine ? 0.95f : 1f), seed, out skin, feminine);
+            CharacterBuilder.DressVillager(rig, Prim.Vary(new Color(0.4f, 0.3f, 0.25f), 0.3f), feminine);
             var v = go.AddComponent<Villager>();
             v.Rig = rig;
             v.VillagerName = Names[seed % Names.Length];

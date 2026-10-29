@@ -4,7 +4,7 @@ A third-person 3D dungeon adventure for Unity, set in the 1700s. You defend your
 whose creatures keep attacking it. You fight through dungeons, take your enemies' weapons and armor, and try
 to stay fed, watered, warm and sane.
 
-This is a **playable vertical slice** built with placeholder art (Unity primitives). All gameplay content lives
+This is a **playable vertical slice** built with code-generated art (human-shaped bodies, primitives for props). All gameplay content lives
 in JSON data, so the six dungeons, five enemy types, bosses, weapons, armor and items can be tuned or extended
 without touching code.
 
@@ -114,10 +114,20 @@ Everything is in `Assets/Resources/Data/*.json`. Ids link entries together, and 
 - **Balance**: `balance.json` holds time speed, hunger and thirst rates, the insanity threshold, the underwear
   damage multiplier, threat speed and starting gear.
 
-## Art: realistic human faces need an asset pipeline
+## Art: bodies and faces
 
-The faces in this slice are placeholders built from primitives (eyes, brows, nose, mouth, ears, 1700s queue
-hair). **Realistic human faces cannot be produced in code. They need real 3D art assets.** Typical options:
+Every character has a human-shaped body generated in code (`Visuals/BodyMesh.cs`): a rounded chest, waist and hips,
+a neck, a shaped head with jaw and nose, tapered arms and legs, hands with thumbs, and feet. The skeleton has hips,
+knees, ankles, spine, shoulders, elbows, wrists and neck, so walking bends the knees and swinging a weapon bends the
+elbow. Clothes and armor are fitted over the body (`CharacterRig.Cover`): shirts, waistcoats, breeches, stockings,
+gowns, frock coats, tricorne hats, helmets and boots. Bodies come in builds from slim
+to muscular to giant (`BodyPlan.Slim/Muscular/Giant`, or the `Muscle` value): muscle sculpts pectorals, abdominals,
+lats, trapezius, deltoids, biceps, triceps, forearms, glutes, quads and calves onto the mesh, and broad shoulders taper
+into the waist. The hero is muscular, villagers vary, the Hollowed are gaunt and bosses are hulking giants.
+Creatures use the same skeleton with their own proportions (big-headed hunched Gnarlings, heavy Brutes, tall Giants)
+plus horns, tusks, pointed ears and glowing eyes.
+
+The faces are still stylised (eyes, lids, brows, nose, lips, ears, 1700s hair). **Realistic human faces cannot be produced in code. They need real 3D art assets.** Typical options:
 
 - **Reallusion Character Creator 4 + Headshot** (photo to 3D head) exported to FBX with the Unity Auto Setup plugin.
 - **Photogrammetry or scanned heads** (for example from a 3D scan service or a marketplace), retopologised and rigged.
@@ -126,7 +136,8 @@ hair). **Realistic human faces cannot be produced in code. They need real 3D art
 
 The code is ready for this. Every entry in the JSON files has an optional `"model"` field. Put a prefab under
 `Assets/Resources/` (for example `Assets/Resources/Models/Hero.prefab`) and set `"model": "Models/Hero"`, and the game
-uses it instead of the placeholder (see `CharacterBuilder.TryModel`). The five creature types should each get their
+uses it instead of the generated body (see `CharacterBuilder.TryModel`). If the prefab has an Animator with a `Speed`
+float, `Attack` and `Hurt` triggers and a `Dead` bool (for example a Mixamo character), the game drives them. The five creature types should each get their
 own sculpted model with several head and body variants to keep the "no two alike" feel.
 
 ## Code map
@@ -141,7 +152,7 @@ Assets/Scripts
   World/     VillageBuilder, DungeonBuilder, WeatherSystem, Interactables (bed, tent, campfire, shop, dummy,
              weights, gates, portals, crates), Loot, VillageRaid (villagers, raids)
   UI/        Hud (IMGUI: bars, shop, inventory, death, effects)
-  Visuals/   Prim (placeholder meshes/materials), CharacterRig (bodies, faces, simple animation), Effects
+  Visuals/   Prim (primitives/materials), BodyMesh (generated body-part meshes), CharacterRig (bodies, faces, clothes, animation), Effects
 ```
 
 ## Not in this slice yet
