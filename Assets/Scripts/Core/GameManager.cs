@@ -67,13 +67,16 @@ namespace Hollowmark
             Hud.Instance.ShowIntro();
         }
 
-        static T[] FindObjectsOfTypeAll<T>() where T : Object
+        /// <summary>Scene objects of a type, without the FindObjectsOfType APIs that changed between Unity versions.</summary>
+        static System.Collections.Generic.List<T> FindObjectsOfTypeAll<T>() where T : Object
         {
-#if UNITY_2023_1_OR_NEWER
-            return Object.FindObjectsByType<T>(FindObjectsSortMode.None);
-#else
-            return Object.FindObjectsOfType<T>();
-#endif
+            var result = new System.Collections.Generic.List<T>();
+            foreach (var o in Resources.FindObjectsOfTypeAll<T>())
+            {
+                var c = o as Component;
+                if (c != null && c.gameObject.scene.IsValid()) result.Add(o);
+            }
+            return result;
         }
 
         void Update()
