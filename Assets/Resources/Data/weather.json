@@ -1,0 +1,24 @@
+{
+  "items": [
+    { "id": "village_fair", "name": "Fair Skies", "message": "A mild morning over the village.", "temperature": 18, "fogDensity": 0.004, "fogColor": "#B8C8D8", "ambientColor": "#8090A0", "lightColor": "#FFF0D8", "lightIntensity": 1.15, "weight": 3 },
+    { "id": "village_drizzle", "name": "Drizzle", "message": "A soft drizzle falls on the rooftops.", "temperature": 13, "fogDensity": 0.012, "fogColor": "#8A9098", "ambientColor": "#606870", "lightColor": "#D0D8E0", "lightIntensity": 0.7, "particles": "Rain", "particleRate": 300, "weight": 1 },
+
+    { "id": "catacomb_damp", "name": "Damp Stillness", "message": "Water drips from the vaulted bones.", "temperature": 11, "fogDensity": 0.035, "fogColor": "#303828", "ambientColor": "#2A3024", "lightColor": "#A0B090", "lightIntensity": 0.35, "particles": "Dust", "particleRate": 60, "weight": 2 },
+    { "id": "catacomb_seep", "name": "Rain Seep", "message": "Rain from the surface pours through the cracks.", "temperature": 8, "fogDensity": 0.045, "fogColor": "#283030", "ambientColor": "#202828", "lightColor": "#90A0A8", "lightIntensity": 0.3, "particles": "Rain", "particleRate": 350, "staminaRegenMultiplier": 0.9, "weight": 1 },
+
+    { "id": "mine_frost", "name": "Biting Frost", "message": "The air in the shafts freezes your breath.", "temperature": -8, "fogDensity": 0.025, "fogColor": "#A8B8C8", "ambientColor": "#506070", "lightColor": "#C8E0FF", "lightIntensity": 0.6, "particles": "Snow", "particleRate": 120, "weight": 2 },
+    { "id": "mine_blizzard", "name": "Blizzard Draft", "message": "A blizzard howls down the main shaft!", "temperature": -20, "fogDensity": 0.07, "fogColor": "#D0D8E0", "ambientColor": "#607080", "lightColor": "#E0F0FF", "lightIntensity": 0.5, "particles": "Snow", "particleRate": 900, "wind": 6, "staminaRegenMultiplier": 0.7, "weight": 1 },
+
+    { "id": "marsh_humid", "name": "Humid Mire", "message": "Thick, warm air clings to your skin.", "temperature": 31, "fogDensity": 0.05, "fogColor": "#3A4A38", "ambientColor": "#304030", "lightColor": "#B0D0A0", "lightIntensity": 0.45, "particles": "Spores", "particleRate": 120, "insanityMultiplier": 1.2, "weight": 2 },
+    { "id": "marsh_storm", "name": "Marsh Downpour", "message": "Rain hammers the sunken nave.", "temperature": 22, "fogDensity": 0.06, "fogColor": "#283828", "ambientColor": "#203020", "lightColor": "#90B090", "lightIntensity": 0.35, "particles": "Rain", "particleRate": 800, "wind": 3, "lightning": true, "weight": 1 },
+
+    { "id": "foundry_heat", "name": "Furnace Heat", "message": "Heat rolls off the forges in waves.", "temperature": 44, "fogDensity": 0.03, "fogColor": "#5A2A18", "ambientColor": "#603020", "lightColor": "#FFB070", "lightIntensity": 0.8, "particles": "Embers", "particleRate": 150, "staminaRegenMultiplier": 0.8, "weight": 2 },
+    { "id": "foundry_ash", "name": "Ash Fall", "message": "Ash falls like black snow.", "temperature": 36, "fogDensity": 0.06, "fogColor": "#302828", "ambientColor": "#302020", "lightColor": "#D08060", "lightIntensity": 0.5, "particles": "Ash", "particleRate": 500, "weight": 1 },
+
+    { "id": "cliff_gale", "name": "Howling Gale", "message": "Wind screams through the arrow slits.", "temperature": 2, "fogDensity": 0.02, "fogColor": "#607080", "ambientColor": "#405060", "lightColor": "#C0D0E0", "lightIntensity": 0.7, "particles": "Rain", "particleRate": 200, "wind": 9, "weight": 2 },
+    { "id": "cliff_thunder", "name": "Thunderstorm", "message": "Lightning splits the sky over the fortress!", "temperature": 6, "fogDensity": 0.04, "fogColor": "#303848", "ambientColor": "#202838", "lightColor": "#A0B0D0", "lightIntensity": 0.4, "particles": "Rain", "particleRate": 1000, "wind": 7, "lightning": true, "insanityMultiplier": 1.2, "weight": 1 },
+
+    { "id": "throne_dread", "name": "Red Dread", "message": "The air tastes of iron. Something whispers your name.", "temperature": 4, "fogDensity": 0.05, "fogColor": "#401010", "ambientColor": "#301010", "lightColor": "#FF8070", "lightIntensity": 0.35, "particles": "Ash", "particleRate": 200, "insanityMultiplier": 2.0, "weight": 2 },
+    { "id": "throne_void", "name": "Silent Void", "message": "Every sound stops. You hear your own heartbeat.", "temperature": -4, "fogDensity": 0.08, "fogColor": "#100808", "ambientColor": "#180808", "lightColor": "#C06060", "lightIntensity": 0.25, "particles": "Dust", "particleRate": 100, "insanityMultiplier": 3.0, "weight": 1 }
+  ]
+}

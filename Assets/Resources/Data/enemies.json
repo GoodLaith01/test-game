@@ -1,0 +1,70 @@
+{
+  "items": [
+    {
+      "id": "gnarling",
+      "name": "Gnarling",
+      "description": "Knee-high, grey-green and quick. They hide in shadow until you are close, then rush in a pack.",
+      "bodyShape": "Goblin", "height": 1.1, "width": 0.55,
+      "moveSpeed": 6.2, "health": 35, "damage": 7, "attackTime": 0.7, "attackRange": 1.5, "sightRange": 14, "stamina": 160,
+      "stealth": "Shadow", "revealDistance": 4.5, "ambushMultiplier": 1.8,
+      "strangeWeapon": "barbed hook-knife",
+      "skinColors": ["#5A6A40", "#4A5A48", "#6A6A50", "#506048"], "eyeColor": "#E8F040",
+      "goldMin": 1, "goldMax": 6, "weaponDropChance": 0.2, "armorDropChance": 0.15, "itemDropChance": 0.5,
+      "weaponDrops": ["gnarl_hook", "dirk", "tomahawk"], "armorDrops": ["gnarl_mask", "leather_cap", "leather_gloves"],
+      "itemDrops": ["apple", "bread", "cave_mushroom", "water_flask"]
+    },
+    {
+      "id": "hollowed",
+      "name": "Hollowed",
+      "description": "Humans who gave up, or who wanted to join the creatures. Grey skin, empty eyes, still wearing what they died in.",
+      "bodyShape": "Humanoid", "height": 1.75, "width": 0.65,
+      "moveSpeed": 3.4, "health": 70, "damage": 13, "attackTime": 1.3, "attackRange": 1.9, "sightRange": 12, "stamina": 100,
+      "stealth": "None",
+      "strangeWeapon": "rusted wheel-rim flail",
+      "skinColors": ["#8A8A88", "#7A7878", "#909088", "#6E7070"], "eyeColor": "#C0D8FF",
+      "goldMin": 4, "goldMax": 14, "weaponDropChance": 0.35, "armorDropChance": 0.4, "itemDropChance": 0.5,
+      "armorDrops": ["wool_coat", "buff_coat", "breeches", "jackboots", "tricorne", "morion", "chain_shirt"],
+      "itemDrops": ["hardtack", "salt_pork", "water_flask", "bandage", "powder_shot"]
+    },
+    {
+      "id": "bog_crawler",
+      "name": "Bog Crawler",
+      "description": "A low, six-limbed thing that burrows under mud and stone and erupts beneath your feet.",
+      "bodyShape": "Crawler", "height": 0.8, "width": 1.0,
+      "moveSpeed": 5.0, "health": 50, "damage": 11, "attackTime": 0.9, "attackRange": 1.7, "sightRange": 12, "stamina": 140,
+      "stealth": "Burrow", "revealDistance": 3.5, "ambushMultiplier": 2.0,
+      "strangeWeapon": "serrated mandibles",
+      "skinColors": ["#3A4A5A", "#2A3A40", "#40483A", "#38404A"], "eyeColor": "#40FF90",
+      "goldMin": 2, "goldMax": 8, "weaponDropChance": 0.1, "armorDropChance": 0.35, "itemDropChance": 0.4,
+      "armorDrops": ["crawler_carapace"],
+      "itemDrops": ["cave_mushroom", "water_flask", "bandage"]
+    },
+    {
+      "id": "ashen_imp",
+      "name": "Ashen Imp",
+      "description": "Small, horned and burning. It keeps its distance and hurls embers, darting away when you close in.",
+      "bodyShape": "Imp", "height": 0.95, "width": 0.5,
+      "moveSpeed": 6.8, "health": 30, "damage": 9, "attackTime": 1.6, "attackRange": 14, "sightRange": 18, "stamina": 180,
+      "stealth": "Shadow", "revealDistance": 6,
+      "ranged": true, "projectileSpeed": 15, "preferredDistance": 8,
+      "strangeWeapon": "ember-sling",
+      "skinColors": ["#6A2A20", "#7A3020", "#5A2020", "#803A28"], "eyeColor": "#FFB020",
+      "goldMin": 3, "goldMax": 10, "weaponDropChance": 0.2, "armorDropChance": 0.25, "itemDropChance": 0.4,
+      "weaponDrops": ["ember_glaive", "flintlock_pistol", "blunderbuss"], "armorDrops": ["ashen_bracers"],
+      "itemDrops": ["powder_shot", "water_flask", "smelling_salts"]
+    },
+    {
+      "id": "rotfang_brute",
+      "name": "Rotfang Brute",
+      "description": "Barely taller than a child but twice as wide as a man. Tireless, and carries a cleaver of fused bone.",
+      "bodyShape": "Brute", "height": 1.35, "width": 1.1,
+      "moveSpeed": 4.0, "health": 130, "damage": 20, "attackTime": 1.5, "attackRange": 2.0, "sightRange": 12, "stamina": 250,
+      "stealth": "None",
+      "strangeWeapon": "bone cleaver",
+      "skinColors": ["#5A6A4A", "#4A5A3A", "#6A5A4A", "#556045"], "eyeColor": "#FF6030",
+      "goldMin": 8, "goldMax": 22, "weaponDropChance": 0.4, "armorDropChance": 0.45, "itemDropChance": 0.6,
+      "weaponDrops": ["bone_cleaver", "boarding_axe", "halberd"], "armorDrops": ["brute_hide", "steel_gauntlets", "tassets"],
+      "itemDrops": ["salt_pork", "cheese", "physic", "small_beer"]
+    }
+  ]
+}

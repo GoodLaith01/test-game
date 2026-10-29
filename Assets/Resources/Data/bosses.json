@@ -1,0 +1,28 @@
+{
+  "items": [
+    { "id": "gnarl_matriarch", "name": "Old Mother Gnarl", "title": "Matriarch of the Catacombs", "description": "A Gnarling grown to monstrous size on the dead of the catacombs.",
+      "bodyShape": "Giant", "height": 2.8, "width": 1.4, "health": 520, "damage": 22, "attackTime": 1.5, "attackRange": 3.0, "moveSpeed": 3.6,
+      "slamRadius": 4.5, "slamDamage": 30, "slamCooldown": 9, "summonEnemyId": "gnarling", "summonCount": 3, "enrageThreshold": 0.35,
+      "color": "#4A5A38", "eyeColor": "#F0F040", "weaponName": "coffin-lid club", "rewardGold": 150, "guaranteedWeapon": "cutlass", "guaranteedArmor": "buff_coat", "threatReduction": 60 },
+    { "id": "frost_warden", "name": "The Frost Warden", "title": "Keeper of the Frozen Shafts", "description": "A miner who went Hollow in the cold, wrapped in ice.",
+      "bodyShape": "Giant", "height": 3.2, "width": 1.5, "health": 700, "damage": 26, "attackTime": 1.7, "attackRange": 3.3, "moveSpeed": 3.0,
+      "slamRadius": 5.5, "slamDamage": 34, "slamCooldown": 8, "summonEnemyId": "hollowed", "summonCount": 2, "enrageThreshold": 0.35,
+      "color": "#8AA8C0", "eyeColor": "#A0F0FF", "weaponName": "frozen pick-hammer", "rewardGold": 220, "guaranteedWeapon": "sabre", "guaranteedArmor": "morion", "threatReduction": 60 },
+    { "id": "abbess_of_mire", "name": "The Drowned Abbess", "title": "Saint of the Sunken Marsh", "description": "Tall and thin, her robes heavy with bog water.",
+      "bodyShape": "Giant", "height": 3.4, "width": 1.1, "health": 760, "damage": 24, "attackTime": 1.3, "attackRange": 3.6, "moveSpeed": 3.4,
+      "slamRadius": 6, "slamDamage": 30, "slamCooldown": 7, "summonEnemyId": "bog_crawler", "summonCount": 3, "enrageThreshold": 0.4,
+      "color": "#3A4A40", "eyeColor": "#60FFB0", "weaponName": "drowned censer", "rewardGold": 260, "guaranteedWeapon": "brown_bess", "guaranteedArmor": "chain_shirt", "threatReduction": 60 },
+    { "id": "forge_tyrant", "name": "The Forge Tyrant", "title": "Bellows-Heart of the Ember Foundry", "description": "An imp-king grown huge in the furnace heat.",
+      "bodyShape": "Giant", "height": 3.6, "width": 1.8, "health": 900, "damage": 30, "attackTime": 1.6, "attackRange": 3.5, "moveSpeed": 3.2,
+      "slamRadius": 6, "slamDamage": 40, "slamCooldown": 8, "summonEnemyId": "ashen_imp", "summonCount": 3, "enrageThreshold": 0.35,
+      "color": "#7A2A18", "eyeColor": "#FFD040", "weaponName": "anvil on a chain", "rewardGold": 320, "guaranteedWeapon": "claymore", "guaranteedArmor": "cuirass", "threatReduction": 60 },
+    { "id": "storm_colonel", "name": "Colonel Grieve", "title": "The Storm-Hollowed Commander", "description": "Once the village's own colonel. He gave up the night the fortress fell.",
+      "bodyShape": "Giant", "height": 3.0, "width": 1.4, "health": 1000, "damage": 32, "attackTime": 1.2, "attackRange": 3.2, "moveSpeed": 4.0,
+      "slamRadius": 5, "slamDamage": 38, "slamCooldown": 7, "summonEnemyId": "rotfang_brute", "summonCount": 2, "enrageThreshold": 0.4,
+      "color": "#3A3A4A", "eyeColor": "#C0C0FF", "weaponName": "lightning-struck halberd", "rewardGold": 400, "guaranteedWeapon": "long_rifle", "guaranteedArmor": "lobster_pot", "threatReduction": 60 },
+    { "id": "hollow_king", "name": "The Hollow King", "title": "He Who Was Given Up To", "description": "The first human who chose the creatures. Four metres of bone and rust.",
+      "bodyShape": "Giant", "height": 4.2, "width": 2.0, "health": 1400, "damage": 38, "attackTime": 1.5, "attackRange": 4.0, "moveSpeed": 3.6,
+      "slamRadius": 7, "slamDamage": 45, "slamCooldown": 6, "summonEnemyId": "hollowed", "summonCount": 3, "enrageThreshold": 0.5,
+      "color": "#2A2020", "eyeColor": "#FF2020", "weaponName": "crown-spiked greatblade", "rewardGold": 1000, "guaranteedWeapon": "executioner", "guaranteedArmor": "forsaken_plate", "threatReduction": 100 }
+  ]
+}

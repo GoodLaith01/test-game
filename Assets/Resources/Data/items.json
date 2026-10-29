@@ -1,0 +1,19 @@
+{
+  "items": [
+    { "id": "bread", "name": "Loaf of Bread", "kind": "Food", "hunger": 25, "price": 4, "color": "#C89850", "dropWeight": 2 },
+    { "id": "salt_pork", "name": "Salted Pork", "kind": "Food", "hunger": 40, "thirst": -8, "price": 8, "color": "#C07070" },
+    { "id": "apple", "name": "Apple", "kind": "Food", "hunger": 10, "thirst": 6, "price": 2, "color": "#C02020", "dropWeight": 2 },
+    { "id": "cheese", "name": "Wheel of Cheese", "kind": "Food", "hunger": 30, "price": 7, "color": "#E8C840" },
+    { "id": "hardtack", "name": "Ship's Biscuit", "kind": "Food", "hunger": 18, "thirst": -4, "price": 3, "color": "#D8C8A0", "dropWeight": 2 },
+    { "id": "cave_mushroom", "name": "Cave Mushroom", "description": "Filling, but it makes your thoughts swim.", "kind": "Food", "hunger": 15, "insanity": 8, "price": 1, "sold": false, "color": "#8060A0" },
+    { "id": "water_flask", "name": "Flask of Water", "kind": "Drink", "thirst": 35, "price": 3, "color": "#4080C0", "dropWeight": 2 },
+    { "id": "small_beer", "name": "Small Beer", "kind": "Drink", "thirst": 25, "hunger": 4, "price": 3, "color": "#C09030" },
+    { "id": "hot_tea", "name": "Hot Tea", "kind": "Drink", "thirst": 20, "warmth": 1.2, "insanity": -3, "price": 5, "color": "#806030" },
+    { "id": "snowmelt", "name": "Cold Snowmelt", "kind": "Drink", "thirst": 20, "warmth": -0.8, "price": 1, "sold": false, "color": "#C0E0FF" },
+    { "id": "bandage", "name": "Linen Bandage", "kind": "Medicine", "health": 25, "price": 10, "color": "#F0F0E8" },
+    { "id": "physic", "name": "Apothecary's Physic", "kind": "Medicine", "health": 60, "stamina": 30, "price": 30, "color": "#60C060" },
+    { "id": "laudanum", "name": "Laudanum", "description": "A tincture that quiets the mind. Use sparingly.", "kind": "Tonic", "insanity": -30, "stamina": -20, "price": 40, "color": "#A04040" },
+    { "id": "smelling_salts", "name": "Smelling Salts", "kind": "Tonic", "stamina": 60, "insanity": -5, "price": 15, "color": "#E0E0FF" },
+    { "id": "powder_shot", "name": "Powder & Shot", "description": "A paper cartridge of black powder and a lead ball.", "kind": "Ammo", "price": 2, "color": "#303030", "dropWeight": 2 }
+  ]
+}

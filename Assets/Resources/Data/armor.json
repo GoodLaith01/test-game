@@ -1,0 +1,27 @@
+{
+  "items": [
+    { "id": "tricorne", "name": "Tricorne Hat", "description": "Keeps rain off. Stops very little else.", "slot": "Head", "defense": 2, "durability": 25, "insulation": 0.1, "weight": 0.1, "tier": 1, "price": 15, "color": "#202020" },
+    { "id": "leather_cap", "name": "Boiled Leather Cap", "description": "Hardened leather skullcap.", "slot": "Head", "defense": 5, "durability": 45, "insulation": 0.12, "weight": 0.3, "tier": 1, "price": 35, "color": "#6A4A2A" },
+    { "id": "morion", "name": "Morion Helmet", "description": "An old crested steel helmet, still hanging in armouries.", "slot": "Head", "defense": 10, "durability": 90, "insulation": 0.08, "weight": 0.8, "tier": 3, "price": 140, "color": "#A8A8B0" },
+    { "id": "lobster_pot", "name": "Lobster-tail Pot", "description": "A cavalry helmet with neck plates.", "slot": "Head", "defense": 14, "durability": 120, "insulation": 0.1, "weight": 1.0, "tier": 4, "price": 260, "color": "#8A8A90" },
+
+    { "id": "wool_coat", "name": "Wool Frock Coat", "description": "Warm and respectable. A blade goes right through it.", "slot": "Chest", "defense": 4, "durability": 40, "insulation": 0.35, "weight": 0.4, "tier": 1, "price": 30, "color": "#7A2020" },
+    { "id": "buff_coat", "name": "Buff Leather Coat", "description": "Thick oiled leather that turns a glancing cut.", "slot": "Chest", "defense": 9, "durability": 80, "insulation": 0.3, "weight": 0.9, "tier": 2, "price": 90, "color": "#B08850" },
+    { "id": "chain_shirt", "name": "Mail Shirt", "description": "Riveted rings. Heavy, cold in winter, hot in summer.", "slot": "Chest", "defense": 15, "durability": 140, "insulation": 0.15, "weight": 1.8, "tier": 3, "price": 220, "color": "#9A9AA0" },
+    { "id": "cuirass", "name": "Steel Cuirass", "description": "A cuirassier's breast and back plate.", "slot": "Chest", "defense": 22, "durability": 200, "insulation": 0.2, "weight": 2.5, "tier": 4, "price": 420, "color": "#C0C0C8" },
+
+    { "id": "leather_gloves", "name": "Riding Gloves", "description": "Soft leather gauntlet gloves.", "slot": "Hands", "defense": 2, "durability": 30, "insulation": 0.12, "weight": 0.1, "tier": 1, "price": 15, "color": "#5A3A20" },
+    { "id": "steel_gauntlets", "name": "Steel Gauntlets", "description": "Articulated plate for the hands.", "slot": "Hands", "defense": 6, "durability": 100, "insulation": 0.1, "weight": 0.5, "tier": 3, "price": 120, "color": "#A0A0A8" },
+
+    { "id": "breeches", "name": "Wool Breeches & Stockings", "description": "Standard dress for the century.", "slot": "Legs", "defense": 2, "durability": 30, "insulation": 0.25, "weight": 0.2, "tier": 1, "price": 15, "color": "#C8B890" },
+    { "id": "jackboots", "name": "Jackboots & Leather Chaps", "description": "Stiff tall boots with leather over the thighs.", "slot": "Legs", "defense": 6, "durability": 70, "insulation": 0.25, "weight": 0.7, "tier": 2, "price": 70, "color": "#2A1A10" },
+    { "id": "tassets", "name": "Steel Tassets", "description": "Plate thigh guards from an older age.", "slot": "Legs", "defense": 12, "durability": 140, "insulation": 0.12, "weight": 1.5, "tier": 4, "price": 260, "color": "#9A9AA0" },
+
+    { "id": "gnarl_mask", "name": "Gnarling Bone Mask", "description": "A creature's skull-mask. It smells awful.", "slot": "Head", "defense": 7, "durability": 50, "insulation": 0.1, "weight": 0.2, "tier": 1, "price": 50, "color": "#D8D0B8", "monsterArmor": true, "sold": false },
+    { "id": "brute_hide", "name": "Rotfang Hide Vest", "description": "Thick, rubbery hide stripped from a Brute. Very warm.", "slot": "Chest", "defense": 13, "durability": 110, "insulation": 0.55, "weight": 1.2, "tier": 2, "price": 160, "color": "#5A6A4A", "monsterArmor": true, "sold": false },
+    { "id": "crawler_carapace", "name": "Crawler Carapace Greaves", "description": "Chitin plates bound with sinew.", "slot": "Legs", "defense": 10, "durability": 90, "insulation": 0.2, "weight": 0.8, "tier": 2, "price": 140, "color": "#3A4A5A", "monsterArmor": true, "sold": false },
+    { "id": "ashen_bracers", "name": "Ashen Bracers", "description": "Warm to the touch. Shield the hands from cold.", "slot": "Hands", "defense": 7, "durability": 80, "insulation": 0.45, "weight": 0.3, "tier": 3, "price": 150, "color": "#4A3030", "monsterArmor": true, "sold": false },
+    { "id": "forsaken_plate", "name": "Forsaken Plate", "description": "Rusted plate fused to a man who gave up. Strong, and it whispers.", "slot": "Chest", "defense": 26, "durability": 220, "insulation": 0.3, "weight": 2.8, "tier": 5, "price": 600, "color": "#4A3A3A", "monsterArmor": true, "sold": false },
+    { "id": "forsaken_helm", "name": "Forsaken Helm", "description": "A visor with no eye slits. You see anyway.", "slot": "Head", "defense": 16, "durability": 150, "insulation": 0.2, "weight": 1.0, "tier": 5, "price": 400, "color": "#3A3030", "monsterArmor": true, "sold": false }
+  ]
+}
