@@ -1,0 +1,65 @@
+{
+  "olmar": {
+    "name": "Olmar",
+    "startAge": 13,
+    "joinAge": 16,
+    "daysPerYear": 4,
+    "lessonMinutes": 60,
+    "lessonsPerDay": 2,
+    "trainFromHour": 7,
+    "trainToHour": 20,
+    "selfPracticeXpPerHour": 6,
+    "baseHealth": 60,
+    "healthPerStrength": 14,
+    "baseDamage": 5,
+    "damagePerStrength": 2.5,
+    "damagePerSkill": 1.5,
+    "woodenSwordMultiplier": 0.5,
+    "grownWeapon": "hanger",
+    "woundedHours": 8,
+    "story": "A thin boy sits alone, hugging his knees, a wooden sword across his lap. \"My ma and pa went down into the Mossy Catacombs to bring back medicine for the village. The creatures took them. They never came home.\" He looks up at you. \"Nobody keeps me now. I sleep behind the church.\"",
+    "sadLines": [
+      "...I'm fine. I don't need anyone.",
+      "Pa made me this sword. He said I'd be a soldier one day.",
+      "The other children play. I just watch."
+    ],
+    "happyLines": [
+      "Watch me! I hit the dummy right in the straw!",
+      "When I'm sixteen I'll fight beside you. You'll see.",
+      "Thank you for taking me home.",
+      "I swept the floor today. Well... most of it."
+    ],
+    "grownLines": [
+      "Ready when you are. Let's make them pay.",
+      "I've been practising. Ask me to show you.",
+      "Ma and Pa would be proud, wouldn't they?"
+    ],
+    "talks": [
+      "You tell Olmar how the Gnarlings hide in the shadows, and that their eyes give them away.",
+      "You show Olmar how to read a creature's shoulders before it swings.",
+      "You teach Olmar to keep his feet apart and his guard up, like a proper soldier.",
+      "You tell Olmar that a good fighter knows when to step back and catch his breath.",
+      "You tell Olmar about the bosses, and how even the biggest of them can fall."
+    ]
+  },
+  "kids": [
+    { "name": "Little Kit", "feminine": false, "seed": 501, "height": 1.25 },
+    { "name": "Hannah", "feminine": true, "seed": 502, "height": 1.32 },
+    { "name": "Tobias", "feminine": false, "seed": 503, "height": 1.4 },
+    { "name": "Mercy", "feminine": true, "seed": 504, "height": 1.2 },
+    { "name": "Ned", "feminine": false, "seed": 505, "height": 1.36 }
+  ],
+  "kidLines": [
+    "You're it! No, wait, Tobias is it!",
+    "Are you going into the dungeons? Bring me back a monster tooth!",
+    "My mum says not to go near the gates.",
+    "I'm the fastest runner in Hollowmark!",
+    "Have you seen Olmar? He never plays with us.",
+    "When I grow up I'm going to be a hero like you."
+  ],
+  "kidLinesOlmarHome": [
+    "Olmar showed us his wooden sword. It's brilliant!",
+    "Is Olmar really your boy now? Lucky him.",
+    "Olmar hits that dummy all day long."
+  ]
+}

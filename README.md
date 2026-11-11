@@ -44,6 +44,21 @@ to raise Swordsmanship) and light and heavy weights (hold E to raise Strength an
 weaponsmith, an armorer (who also repairs armor) and a provisioner selling food, water, medicine and ammunition.
 A well for free water. Villagers, and six dungeon gates. A gate unlocks when the boss of the previous dungeon is dead.
 
+**Village children and Olmar.** Five children play tag on the green by the well, chat when you press E, and run
+indoors at night or when the village is raided. Beside the church sits **Olmar**, a 13-year-old boy whose parents were
+taken by the creatures in the dungeons. Talk to him to hear his story and adopt him. He then lives in your house (his
+cot is next to your bed) and practises with his father's wooden sword on his own dummy beside the training yard.
+Talk to him to:
+- *Teach him at the dummy* (1 hour, twice a day, daylight only). He learns faster when your own Swordsmanship and
+  Strength are higher.
+- *Talk with him* once a day. It cheers him up and raises his Smarts.
+
+He grows a year older every 4 game days. At 16 he gets a real sword and you choose: **take him into the dungeons**,
+where he follows you and fights, or **leave him home**, where he fights off village raids. Strength gives him damage
+and health, Swordplay makes him swing faster and miss less, and Smarts lets him spot hidden creatures (and drag them
+out at level 5), step back when badly hurt (level 3), protect you first and dodge blows. Creatures may go for him
+instead of you. If he is beaten he goes home to rest for 8 hours. Tune all of this in `Resources/Data/family.json`.
+
 **Dungeons.** Six dungeons, each with its own look, temperature and changing weather:
 
 | Dungeon | Tier | Weather | Enemies | Boss |
