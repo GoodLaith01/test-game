@@ -143,6 +143,7 @@ namespace Hollowmark.World
                 var f = l.gameObject.AddComponent<Flicker>();
                 f.Amount = warm ? 0.2f : 0.08f;
                 f.Speed = warm ? 8f : 2f;
+                f.NightLamp = warm && GameManager.Instance != null && GameManager.Instance.InVillage;
             }
         }
 
