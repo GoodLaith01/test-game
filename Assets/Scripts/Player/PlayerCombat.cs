@@ -55,15 +55,17 @@ namespace Hollowmark.Player
 
         float AttackTime(WeaponDef w)
         {
-            float t = w.attackTime / (1f + 0.04f * (hero.Stats.Swordsmanship.Level - 1));
+            float t = w.attackTime / (1f + 0.04f * (hero.Stats.Swordsmanship.Level - 1)) / hero.Stats.Progress.AttackSpeed;
             return t * (1f + hero.Stats.MindPenalty * 0.4f);
         }
 
-        float DamageFor(WeaponDef w)
+        /// <summary>Damage of one hit before critical rolls, with skills, perks, hunger, sanity and meal buffs applied.</summary>
+        public float DamageFor(WeaponDef w)
         {
             var s = hero.Stats;
             float dmg = w.damage;
-            if (w.Kind == WeaponKind.Melee) dmg *= 1f + 0.07f * (s.Swordsmanship.Level - 1);
+            if (w.Kind == WeaponKind.Melee) dmg *= (1f + 0.07f * (s.Swordsmanship.Level - 1)) * s.Progress.MeleeDamageMult;
+            else dmg *= s.Progress.FirearmDamageMult;
             if (w.Weight == WeightClass.Heavy || w.Weight == WeightClass.Great) dmg *= 1f + 0.06f * (s.Strength.Level - 1);
             if (s.Hunger < 15f) dmg *= 0.8f;
             dmg *= 1f - 0.35f * s.MindPenalty;
@@ -100,14 +102,31 @@ namespace Hollowmark.Player
             }
             float wobble = s.MindPenalty * 40f;
             var fwd = Quaternion.Euler(0f, Random.Range(-wobble, wobble), 0f) * transform.forward;
-            var info = new DamageInfo { Amount = DamageFor(w), From = transform.position, Source = gameObject, IsPlayer = true, IsMelee = true };
-            int hits = Layers.HitCone(transform.position + Vector3.up, fwd, w.range, w.arc, info, gameObject);
+            int hits = MeleeHit(w, fwd, w.range, w.arc, 1f);
+            if (hits > 0 && hero.Cam != null) hero.Cam.Shake(0.4f);
+            s.TrainSkill(s.Endurance, 0.3f);
+        }
+
+        /// <summary>
+        /// One melee strike: rolls a critical hit, damages everything in the cone, heals from Bloodthirst and trains
+        /// Swordsmanship. Used by normal swings and by the Whirlwind and Lunge abilities.
+        /// </summary>
+        public int MeleeHit(WeaponDef w, Vector3 forward, float range, float arc, float multiplier)
+        {
+            var s = hero.Stats;
+            float dmg = DamageFor(w) * multiplier;
+            bool crit = Random.value < s.Progress.CritChance(true);
+            if (crit) dmg *= s.Progress.CritDamage;
+            var info = new DamageInfo { Amount = dmg, From = transform.position, Source = gameObject, IsPlayer = true, IsMelee = true };
+            int hits = Layers.HitCone(transform.position + Vector3.up, forward, range, arc, info, gameObject);
             if (hits > 0)
             {
+                if (crit) { hero.Say("<color=#ffd040>Critical hit!</color>"); Effects.HitSpark(transform.position + Vector3.up * 1.2f + forward * range * 0.6f, new Color(1f, 0.85f, 0.3f)); }
+                float steal = s.Progress.LifeSteal;
+                if (steal > 0f) s.Heal(dmg * hits * steal);
                 s.TrainSkill(s.Swordsmanship, 2f * hits);
-                if (hero.Cam != null) hero.Cam.Shake(0.4f);
             }
-            s.TrainSkill(s.Endurance, 0.3f);
+            return hits;
         }
 
         IEnumerator Reload(WeaponDef w)
@@ -121,7 +140,7 @@ namespace Hollowmark.Player
             }
             Reloading = true;
             hero.Say("Reloading " + w.name + "...");
-            float duration = w.reloadTime * (1f + hero.Stats.MindPenalty * 0.8f) * (hero.Stats.Cold ? 1.3f : 1f);
+            float duration = w.reloadTime * (1f + hero.Stats.MindPenalty * 0.8f) * (hero.Stats.Cold ? 1.3f : 1f) * hero.Stats.Progress.ReloadMult;
             float t = 0f;
             while (t < duration)
             {
@@ -130,7 +149,8 @@ namespace Hollowmark.Player
                 ReloadProgress = t / duration;
                 yield return null;
             }
-            inv.TakeItem(AmmoId, Mathf.Max(1, w.ammoPerShot));
+            if (Random.value < hero.Stats.Progress.AmmoSave) hero.Say("Powder Thrift: that load cost you nothing.");
+            else inv.TakeItem(AmmoId, Mathf.Max(1, w.ammoPerShot));
             inv.LoadedRounds = 1;
             Reloading = false;
             ReloadProgress = 0f;
@@ -156,7 +176,14 @@ namespace Hollowmark.Player
             // Never aim behind the muzzle (e.g. when the camera is pressed against a wall).
             if (Vector3.Dot(aimPoint - muzzle, transform.forward) < 0.5f) aimPoint = muzzle + cam.forward * w.range;
 
-            float spread = w.spread * (Aiming ? 0.5f : 1f) + hero.Stats.MindPenalty * 12f;
+            var s = hero.Stats;
+            bool deadEye = Time.time < s.Progress.DeadEyeUntil;
+            s.Progress.DeadEyeUntil = 0f;
+            var deadEyeDef = SkillDatabase.Ability("dead_eye");
+            float spread = deadEye ? 0f : (w.spread * (Aiming ? 0.5f : 1f)) * s.Progress.SpreadMult + s.MindPenalty * 12f;
+            bool crit = deadEye || Random.value < s.Progress.CritChance(false);
+            float shotMult = (crit ? s.Progress.CritDamage : 1f) * (deadEye && deadEyeDef != null ? deadEyeDef.power : 1f);
+            int landed = 0;
             for (int i = 0; i < Mathf.Max(1, w.pellets); i++)
             {
                 var dir = (aimPoint - muzzle).normalized;
@@ -167,11 +194,19 @@ namespace Hollowmark.Player
                     end = hit.point;
                     var target = hit.collider.GetComponentInParent<IDamageable>();
                     if (target != null && target.IsAlive)
-                        target.TakeDamage(new DamageInfo { Amount = DamageFor(w), From = transform.position, Source = gameObject, IsPlayer = true });
+                    {
+                        target.TakeDamage(new DamageInfo { Amount = DamageFor(w) * shotMult, From = transform.position, Source = gameObject, IsPlayer = true });
+                        landed++;
+                    }
                 }
                 Effects.Tracer(muzzle, end);
             }
             Effects.MuzzleFlash(muzzle);
+            if (landed > 0)
+            {
+                if (crit) hero.Say(deadEye ? "<color=#ffd040>Dead-Eye!</color>" : "<color=#ffd040>Critical shot!</color>");
+                s.TrainSkill(s.Marksmanship, 3f + landed);
+            }
             if (hero.Cam != null) hero.Cam.Shake(1f);
         }
     }

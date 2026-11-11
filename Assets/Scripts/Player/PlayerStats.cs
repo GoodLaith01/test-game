@@ -42,14 +42,19 @@ namespace Hollowmark.Player
         public readonly Skill Strength = new Skill("Strength");
         public readonly Skill Endurance = new Skill("Endurance");
         public readonly Skill Swordsmanship = new Skill("Swordsmanship");
+        public readonly Skill Marksmanship = new Skill("Marksmanship");   // hits with firearms
+        public readonly Skill Athletics = new Skill("Athletics");         // sprinting, rolling and jumping
+
+        /// <summary>Character level, XP, skill trees and perks (see Progression.cs and skills.json).</summary>
+        public readonly Progression Progress = new Progression();
 
         public Inventory Inventory = new Inventory();
         public readonly Buffs Buffs = new Buffs();     // cooked meals and homestead buildings
         public bool Dead { get; private set; }
         public bool IsAlive { get { return !Dead; } }
 
-        public float MaxHealth { get { return GameDatabase.Balance.baseHealth + (Strength.Level - 1) * 6f + (Endurance.Level - 1) * 4f + Buffs.MaxHealthBonus; } }
-        public float MaxStamina { get { return GameDatabase.Balance.baseStamina + (Endurance.Level - 1) * 12f + (Strength.Level - 1) * 3f + Buffs.MaxStaminaBonus; } }
+        public float MaxHealth { get { return GameDatabase.Balance.baseHealth + (Strength.Level - 1) * 6f + (Endurance.Level - 1) * 4f + Buffs.MaxHealthBonus + Progress.MaxHealthBonus; } }
+        public float MaxStamina { get { return GameDatabase.Balance.baseStamina + (Endurance.Level - 1) * 12f + (Strength.Level - 1) * 3f + (Athletics.Level - 1) * 4f + Buffs.MaxStaminaBonus + Progress.MaxStaminaBonus; } }
 
         public bool Cold { get { return BodyTemp < 35.8f; } }
         public bool Hot { get { return BodyTemp > 38.3f; } }
@@ -64,6 +69,7 @@ namespace Hollowmark.Player
 
         void Awake()
         {
+            Progress.Bind(this);
             Health = MaxHealth;
             Stamina = MaxStamina;
         }
@@ -80,8 +86,8 @@ namespace Hollowmark.Player
 
             // Hunger and thirst.
             float heatThirst = Hot ? 1.8f : 1f;
-            Hunger = Mathf.Max(0f, Hunger - B.hungerPerGameHour * hours * (Cold ? 1.4f : 1f));
-            Thirst = Mathf.Max(0f, Thirst - B.thirstPerGameHour * hours * heatThirst);
+            Hunger = Mathf.Max(0f, Hunger - B.hungerPerGameHour * hours * (Cold ? 1.4f : 1f) * Progress.HungerMult);
+            Thirst = Mathf.Max(0f, Thirst - B.thirstPerGameHour * hours * heatThirst * Progress.ThirstMult);
             if (Hunger <= 0f) Hurt(B.starvingDamagePerSecond * dt, "starvation");
             if (Thirst <= 0f) Hurt(B.dehydratedDamagePerSecond * dt, "thirst");
 
@@ -91,7 +97,7 @@ namespace Hollowmark.Player
             float exposure = 0f;
             if (EnvironmentTemp < B.comfortableMin) exposure = (EnvironmentTemp - B.comfortableMin) * (1f - insulation);
             else if (EnvironmentTemp > B.comfortableMax) exposure = (EnvironmentTemp - B.comfortableMax) * (1f - insulation * 0.7f);
-            float targetTemp = 37f + exposure * 0.12f;
+            float targetTemp = 37f + exposure * 0.12f * Progress.TemperatureMult;
             BodyTemp = Mathf.MoveTowards(BodyTemp, targetTemp, dt * 0.05f);
             if (BodyTemp < 34.5f) Hurt(B.temperatureDamagePerSecond * dt, "the cold");
             if (BodyTemp > 39.5f) Hurt(B.temperatureDamagePerSecond * dt, "the heat");
@@ -102,7 +108,7 @@ namespace Hollowmark.Player
             {
                 float mult = weather != null ? weather.InsanityMultiplier : 1f;
                 float before = Insanity;
-                Insanity = Mathf.Min(100f, Insanity + B.insanityPerGameHour * hours * mult);
+                Insanity = Mathf.Min(100f, Insanity + B.insanityPerGameHour * hours * mult * Progress.InsanityMult);
                 if (before < 30f && Insanity >= 30f) Message("You have not slept in a long time. Your hands are shaking.");
                 if (before < 60f && Insanity >= 60f) Message("Shapes move at the edge of your sight. Find a tent and sleep!");
                 if (before < 90f && Insanity >= 90f) Message("Your mind is breaking. Sleep, or die.");
@@ -125,7 +131,7 @@ namespace Hollowmark.Player
             if (Cold || Hot) regen *= 0.6f;
             regen *= 1f / (1f + Inventory.ArmorWeight * 0.08f);
             if (weather != null) regen *= weather.StaminaRegenMultiplier;
-            regen *= Buffs.StaminaRegenMultiplier;
+            regen *= Buffs.StaminaRegenMultiplier * Progress.StaminaRegenMult;
             if (Poison > 30f) regen *= 0.7f;
             if (Time.time - LastDamageTime > 0.8f && !Blocking) Stamina = Mathf.Min(MaxStamina, Stamina + regen * dt);
 
@@ -153,15 +159,15 @@ namespace Hollowmark.Player
 
         public void TakeDamage(DamageInfo info)
         {
-            if (Dead || Rolling || info.Amount <= 0f) return;
+            if (Dead || Rolling || info.Amount <= 0f || Time.time < Progress.UntouchableUntil) return;
             float dmg = info.Amount;
 
             if (Blocking && info.IsMelee)
             {
                 var toAttacker = info.From - transform.position; toAttacker.y = 0f;
-                if (Vector3.Angle(transform.forward, toAttacker) < 70f && UseStamina(B.blockStaminaPerHit))
+                if (Vector3.Angle(transform.forward, toAttacker) < 70f && UseStamina(B.blockStaminaPerHit * Progress.BlockStaminaMult))
                 {
-                    dmg *= 0.25f;
+                    dmg *= Progress.BlockFactor;
                     Message("Blocked!");
                 }
             }
@@ -174,12 +180,12 @@ namespace Hollowmark.Player
             {
                 float def = Inventory.Defense;
                 dmg *= 100f / (100f + def * 4f);
-                var broken = Inventory.WearArmor(info.Amount);
+                var broken = Inventory.WearArmor(info.Amount * Progress.ArmorWearMult);
                 foreach (var name in broken) Message("Your " + name + " broke and fell off!");
                 if (broken.Count > 0 && Inventory.InUnderwear) Message(UnderwearLine());
             }
 
-            dmg *= Buffs.DamageTakenMultiplier;
+            dmg *= Buffs.DamageTakenMultiplier * Progress.DamageTakenMult;
             LastDamageTime = Time.time;
             Hurt(dmg, "wounds");
             if (info.Poison > 0f) AddPoison(info.Poison);
@@ -199,6 +205,15 @@ namespace Hollowmark.Player
         {
             if (Dead || amount <= 0f || float.IsNaN(amount)) return;
             Health -= amount;
+            if (Health <= 0f && Progress.HasLastStand && Progress.LastStandReady)
+            {
+                // Last Stand perk: once between sleeps, a killing blow leaves you standing.
+                Health = 1f;
+                Progress.LastStandReady = false;
+                Progress.UntouchableUntil = Time.time + 2f;
+                Message("<color=#ffd040>LAST STAND!</color> You refuse to fall. Sleep to steel yourself again.");
+                return;
+            }
             if (Health <= 0f)
             {
                 Health = 0f;
@@ -210,7 +225,7 @@ namespace Hollowmark.Player
         public void AddPoison(float amount)
         {
             if (Dead || amount <= 0f) return;
-            float taken = amount * (1f - Buffs.PoisonResist);
+            float taken = amount * (1f - Buffs.PoisonResist) * (1f - Progress.PoisonResist);
             if (taken < 0.5f) { if (Random.value < 0.3f) Message("Your poison ward holds."); return; }
             bool first = Poison <= 0f;
             Poison = Mathf.Min(100f, Poison + taken);
@@ -239,6 +254,7 @@ namespace Hollowmark.Player
         public void Sleep(float hours, bool inBed)
         {
             HoursAwake = 0f;
+            Progress.LastStandReady = true;
             Insanity = Mathf.Max(0f, Insanity - B.sleepInsanityRecoveryPerHour * hours * (inBed ? 1.5f : 1f));
             Stamina = MaxStamina;
             Heal(hours * (inBed ? 10f : 5f));
@@ -260,6 +276,8 @@ namespace Hollowmark.Player
             BodyTemp = 37f;
             Poison = 0f;
             Buffs.Clear();
+            Progress.LastStandReady = true;
+            Progress.WarCryUntil = Progress.DeadEyeUntil = 0f;
         }
 
         public void TrainSkill(Skill skill, float xp)
@@ -268,7 +286,19 @@ namespace Hollowmark.Player
             {
                 Message(skill.Name + " increased to " + skill.Level + "!");
                 if (skill == Strength) Message("You can now wield weapons that need Strength " + skill.Level + ".");
+                Progress.OnSkillLevel(skill);
             }
+        }
+
+        public IEnumerable<Skill> AllSkills
+        {
+            get { yield return Strength; yield return Endurance; yield return Swordsmanship; yield return Marksmanship; yield return Athletics; }
+        }
+
+        public Skill SkillByName(string name)
+        {
+            foreach (var s in AllSkills) if (s.Name == name) return s;
+            return null;
         }
 
         public List<string> SkillSummary()
@@ -278,6 +308,9 @@ namespace Hollowmark.Player
                 string.Format("Strength {0} ({1:0}/{2:0})", Strength.Level, Strength.Xp, Strength.XpToNext),
                 string.Format("Endurance {0} ({1:0}/{2:0})", Endurance.Level, Endurance.Xp, Endurance.XpToNext),
                 string.Format("Swordsmanship {0} ({1:0}/{2:0})", Swordsmanship.Level, Swordsmanship.Xp, Swordsmanship.XpToNext),
+                string.Format("Marksmanship {0} ({1:0}/{2:0})", Marksmanship.Level, Marksmanship.Xp, Marksmanship.XpToNext),
+                string.Format("Athletics {0} ({1:0}/{2:0})", Athletics.Level, Athletics.Xp, Athletics.XpToNext),
+                string.Format("<color=#c8a0ff>Level {0}</color> ({1:0}/{2:0} XP), {3} skill point(s): press K", Progress.Level, Progress.Xp, Progress.XpToNext, Progress.Points),
             };
         }
     }

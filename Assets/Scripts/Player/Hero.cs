@@ -38,6 +38,7 @@ namespace Hollowmark.Player
             hero.Visual = go.AddComponent<PlayerVisual>();
             hero.Controller = go.AddComponent<PlayerController>();
             hero.Combat = go.AddComponent<PlayerCombat>();
+            go.AddComponent<Abilities>(); // skill-tree abilities on the 1-4 keys
             go.AddComponent<InsanityEffects>();
 
             hero.Cam = camera.gameObject.GetComponent<ThirdPersonCamera>();

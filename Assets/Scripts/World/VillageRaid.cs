@@ -133,6 +133,7 @@ namespace Hollowmark.World
                     Hero.Instance.Stats.Inventory.Gold += 50;
                     Hero.Instance.Stats.Inventory.NotifyChanged();
                     Hero.Instance.Say("The grateful villagers give you 50 gold.");
+                    Hero.Instance.Stats.Progress.AddXp(SkillDatabase.Config.raidXp, "for saving the village");
                 }
                 GameManager.Instance.Raid = null;
                 Destroy(gameObject);

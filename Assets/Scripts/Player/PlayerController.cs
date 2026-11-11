@@ -12,6 +12,7 @@ namespace Hollowmark.Player
         float verticalSpeed;
         float rollTimer;
         Vector3 rollDir;
+        float rollSpeed = 9f;
 
         public float CurrentSpeed { get; private set; }
         public bool Sprinting { get; private set; }
@@ -20,6 +21,16 @@ namespace Hollowmark.Player
         {
             cc = GetComponent<CharacterController>();
             hero = GetComponent<Hero>();
+        }
+
+        /// <summary>A short burst of movement with the roll's invulnerability, used by the Lunge ability.</summary>
+        public void Dash(Vector3 dir, float speed, float time)
+        {
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.01f) dir = transform.forward;
+            rollDir = dir.normalized;
+            rollSpeed = speed;
+            rollTimer = time;
         }
 
         public void Teleport(Vector3 position, float yaw)
@@ -50,8 +61,10 @@ namespace Hollowmark.Player
             {
                 Sprinting = true;
                 speed = b.sprintSpeed;
-                stats.Stamina = Mathf.Max(0f, stats.Stamina - b.sprintStaminaPerSecond * Time.deltaTime);
+                stats.Stamina = Mathf.Max(0f, stats.Stamina - b.sprintStaminaPerSecond * stats.Progress.MoveStaminaMult * Time.deltaTime);
+                stats.TrainSkill(stats.Athletics, 0.25f * Time.deltaTime);
             }
+            speed *= stats.Progress.MoveSpeedMult;
             speed /= 1f + stats.Inventory.ArmorWeight * 0.03f;
             if (stats.Inventory.InUnderwear) speed *= 1.1f; // light as a feather, at least
             if (stats.Cold) speed *= 0.85f;
@@ -61,8 +74,10 @@ namespace Hollowmark.Player
             // Dodge roll: brief invulnerability.
             if (!hero.InputLocked && rollTimer <= 0f && (GameInput.KeyDown(KeyCode.C) || GameInput.KeyDown(KeyCode.LeftControl)) && cc.isGrounded)
             {
-                if (stats.UseStamina(b.rollStaminaCost))
+                if (stats.UseStamina(b.rollStaminaCost * stats.Progress.MoveStaminaMult))
                 {
+                    stats.TrainSkill(stats.Athletics, 1.5f);
+                    rollSpeed = 9f;
                     rollTimer = 0.45f;
                     rollDir = move.sqrMagnitude > 0.1f ? move.normalized : -transform.forward;
                 }
@@ -73,7 +88,7 @@ namespace Hollowmark.Player
             {
                 rollTimer -= Time.deltaTime;
                 stats.Rolling = rollTimer > 0.1f;
-                horizontal = rollDir * 9f;
+                horizontal = rollDir * rollSpeed;
             }
             else
             {
@@ -91,7 +106,7 @@ namespace Hollowmark.Player
             if (cc.isGrounded)
             {
                 verticalSpeed = -2f;
-                if (!hero.InputLocked && GameInput.KeyDown(KeyCode.Space) && stats.UseStamina(8f)) verticalSpeed = 5.5f;
+                if (!hero.InputLocked && GameInput.KeyDown(KeyCode.Space) && stats.UseStamina(8f * stats.Progress.MoveStaminaMult)) { verticalSpeed = 5.5f; stats.TrainSkill(stats.Athletics, 0.5f); }
             }
             else verticalSpeed -= 18f * Time.deltaTime;
 

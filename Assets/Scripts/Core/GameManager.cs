@@ -85,6 +85,7 @@ namespace Hollowmark
             gameObject.AddComponent<Hud>();
             gameObject.AddComponent<Crafting.CraftingUi>(); // cooking, building and quest panels
             gameObject.AddComponent<Family.FamilyUi>();     // talking to Olmar
+            gameObject.AddComponent<SkillsUi>();            // character level, skill trees and the ability bar (K)
             hero = Hero.Create(cam);
             hero.Stats.OnMessage += Hud.Push;
             EnterVillage();
