@@ -50,12 +50,34 @@ namespace Hollowmark.Visuals
                 if (particle == null)
                 {
                     if (GraphicsSettings.currentRenderPipeline != null) particle = Shader.Find("Universal Render Pipeline/Particles/Unlit");
-                    if (particle == null) particle = Shader.Find("Particles/Standard Unlit");
                     if (particle == null) particle = Shader.Find("Legacy Shaders/Particles/Alpha Blended");
+                    if (particle == null) particle = Shader.Find("Particles/Standard Unlit");
                     if (particle == null) particle = Shader.Find("Sprites/Default");
                 }
                 return particle;
             }
+        }
+
+        /// <summary>A soft, alpha-blended particle material in the given colour, for either render pipeline.</summary>
+        public static Material ParticleMat(Color c)
+        {
+            var m = new Material(ParticleShader) { name = "Particle" };
+            foreach (var prop in new[] { "_MainTex", "_BaseMap" }) if (m.HasProperty(prop)) m.SetTexture(prop, Surfaces.SoftDot);
+            if (m.HasProperty("_TintColor")) m.SetColor("_TintColor", c * 0.5f);
+            SetColor(m, c);
+            if (m.HasProperty("_Surface"))
+            {
+                // URP particles: transparent, alpha blended, no depth writes.
+                m.SetFloat("_Surface", 1f);
+                m.SetFloat("_Blend", 0f);
+                if (m.HasProperty("_SrcBlend")) m.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+                if (m.HasProperty("_DstBlend")) m.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+                if (m.HasProperty("_ZWrite")) m.SetFloat("_ZWrite", 0f);
+                m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                m.SetOverrideTag("RenderType", "Transparent");
+                m.renderQueue = (int)RenderQueue.Transparent;
+            }
+            return m;
         }
 
         public static Font DefaultFont
@@ -70,6 +92,13 @@ namespace Hollowmark.Visuals
                 }
                 return font;
             }
+        }
+
+        /// <summary>A textured material for the given surface (see Surfaces). Glowing materials stay flat.</summary>
+        public static Material Mat(Color c, Surface surface)
+        {
+            if (surface == Surface.None) return Mat(c);
+            return Surfaces.Get(c, surface);
         }
 
         public static Material Mat(Color c, bool glow = false)
@@ -101,14 +130,34 @@ namespace Hollowmark.Visuals
             go.transform.localPosition = localPos;
             go.transform.localScale = localScale;
             var r = go.GetComponent<Renderer>();
-            r.sharedMaterial = Mat(color, glow);
-            if (glow) r.shadowCastingMode = ShadowCastingMode.Off;
+            if (glow) { r.sharedMaterial = Mat(color, true); r.shadowCastingMode = ShadowCastingMode.Off; }
+            else Texture(go, color, Surfaces.Guess(name ?? go.name, color));
             if (!collider)
             {
                 var col = go.GetComponent<Collider>();
                 if (col != null) Object.DestroyImmediate(col); // immediate, so it can never block the frame it was built in
             }
             return go;
+        }
+
+        /// <summary>
+        /// Gives an object a textured material, with UVs in metres so the texture is the same size on every object.
+        /// Tiny pieces (eyes, buttons) keep their own UVs and get the plain surface.
+        /// </summary>
+        public static void Texture(GameObject go, Color color, Surface surface)
+        {
+            var r = go.GetComponent<Renderer>();
+            if (r == null) return;
+            var scale = go.transform.lossyScale;
+            float size = Mathf.Max(Mathf.Abs(scale.x), Mathf.Max(Mathf.Abs(scale.y), Mathf.Abs(scale.z)));
+            var mf = go.GetComponent<MeshFilter>();
+            if (size < 0.12f && surface != Surface.Metal && surface != Surface.Gold && surface != Surface.Wet) surface = Surface.Plain;
+            else if (mf != null && mf.sharedMesh != null)
+            {
+                var m = Surfaces.MetricCopy(mf.sharedMesh, new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z)));
+                if (m != null) mf.sharedMesh = m;
+            }
+            r.sharedMaterial = Mat(color, surface);
         }
 
         /// <summary>Like Make, but with a generated mesh (see BodyMesh) instead of a primitive.</summary>
@@ -120,8 +169,12 @@ namespace Hollowmark.Visuals
             go.transform.localScale = localScale;
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             var r = go.AddComponent<MeshRenderer>();
-            r.sharedMaterial = Mat(color, glow);
-            if (glow) r.shadowCastingMode = ShadowCastingMode.Off;
+            if (glow) { r.sharedMaterial = Mat(color, true); r.shadowCastingMode = ShadowCastingMode.Off; }
+            else
+            {
+                Surfaces.EnsureUV(mesh);
+                r.sharedMaterial = Mat(color, Surfaces.ForGarment(name, color));
+            }
             return go;
         }
 

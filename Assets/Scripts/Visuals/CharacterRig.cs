@@ -44,6 +44,10 @@ namespace Hollowmark.Visuals
         public float ArmRoll = 7f; // arms hang slightly away from the body
         public HumanMesh.Fit Fit;  // set on realistic (sculpted) bodies
 
+        /// <summary>What other characters turn their heads to look at when it is near (the hero's head).</summary>
+        public static Transform LookTarget;
+        float lookYaw, lookPitch;
+
         // Driven by controllers.
         [HideInInspector] public float MoveSpeed;
         [HideInInspector] public bool Dead;
@@ -189,7 +193,28 @@ namespace Hollowmark.Visuals
             if (Torso != null && hasBase)
                 Torso.localRotation = torsoBase * Quaternion.Euler(move * 6f + breathe * 1.2f, Mathf.Sin(phase) * 5f * move, 0f);
             if (Head != null)
-                Head.localRotation = Quaternion.Euler(-move * 5f + Mathf.Sin(time * 0.7f) * 2f, Mathf.Sin(time * 0.37f) * 8f * (1f - move), 0f);
+            {
+                // Glance at the hero when they come close, otherwise look idly around.
+                float wantYaw = 0f, wantPitch = 0f;
+                if (LookTarget != null && LookTarget != Head && Head.parent != null)
+                {
+                    var to = LookTarget.position - Head.position;
+                    if (to.sqrMagnitude < 64f && to.sqrMagnitude > 0.01f)
+                    {
+                        var local = Head.parent.InverseTransformDirection(to.normalized);
+                        float yaw = Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg;
+                        if (Mathf.Abs(yaw) < 100f)
+                        {
+                            wantYaw = Mathf.Clamp(yaw, -55f, 55f);
+                            wantPitch = Mathf.Clamp(-Mathf.Asin(Mathf.Clamp(local.y, -1f, 1f)) * Mathf.Rad2Deg, -25f, 25f);
+                        }
+                    }
+                }
+                lookYaw = Mathf.Lerp(lookYaw, wantYaw, dt * 4f);
+                lookPitch = Mathf.Lerp(lookPitch, wantPitch, dt * 4f);
+                Head.localRotation = Quaternion.Euler(-move * 5f + Mathf.Sin(time * 0.7f) * 2f + lookPitch,
+                    Mathf.Sin(time * 0.37f) * 8f * (1f - move) * (1f - Mathf.Abs(lookYaw) / 55f) + lookYaw, 0f);
+            }
 
             if (Body != null && hasBase)
             {
@@ -384,26 +409,10 @@ namespace Hollowmark.Visuals
             Prim.Shape(BodyMesh.Get(feminine ? "Bun" : "Queue"), h, Vector3.zero, Vector3.one, hair, feminine ? "Bun" : "Queue");
         }
 
-        /// <summary>Everyday 18th-century clothes: shirt, waistcoat, breeches, stockings and shoes, or a shift and gown.</summary>
+        /// <summary>Everyday 18th-century clothes with period details (see Gear.DressVillager).</summary>
         public static void DressVillager(CharacterRig rig, Color main, bool feminine)
         {
-            var linen = new Color(0.92f, 0.9f, 0.84f);
-            var shoes = new Color(0.12f, 0.09f, 0.07f);
-            rig.Cover(linen, 0.006f, "Shirt", BodyRegion.Chest, BodyRegion.UpperArm, BodyRegion.Forearm);
-            if (feminine) rig.Cover(main, 0.013f, "Bodice", BodyRegion.Chest, BodyRegion.Pelvis);
-            else rig.Cover(main, 0.013f, "Waistcoat", BodyRegion.Chest);
-            rig.Cover(shoes, 0.006f, "Shoes", BodyRegion.Foot);
-            if (feminine)
-            {
-                Prim.Shape(BodyMesh.Get("Gown"), rig.Torso, Vector3.zero, rig.TrunkScale, main * 0.85f, "Gown");
-                rig.Cover(new Color(0.85f, 0.84f, 0.8f), 0.004f, "Stockings", BodyRegion.Shin);
-            }
-            else
-            {
-                rig.Cover(main * 0.7f, 0.008f, "Breeches", BodyRegion.Pelvis, BodyRegion.Thigh);
-                rig.Cover(new Color(0.85f, 0.84f, 0.8f), 0.004f, "Stockings", BodyRegion.Shin);
-            }
-            rig.CollectRenderers();
+            Gear.DressVillager(rig, main, feminine);
         }
 
         static BodyPlan CreaturePlan(BodyShape shape, out float typicalWidth)
@@ -444,6 +453,7 @@ namespace Hollowmark.Visuals
                 if (!realistic) rig = BuildBody(parent, "CreatureRig", height, plan, skin);
                 BuildCreatureFace(rig, shape, skin, dark, eyeColor, realistic);
                 DressCreature(rig, shape, skin, dark, height);
+                Gear.CreatureDetail(rig, shape, skin);
             }
 
             Random.state = oldState;
@@ -631,39 +641,12 @@ namespace Hollowmark.Visuals
             return rig;
         }
 
-        /// <summary>Simple placeholder model for a held weapon, sized from the weapon data.</summary>
+        /// <summary>The model for a held weapon: a real prefab if the JSON names one, otherwise a detailed generated one.</summary>
         public static GameObject BuildWeapon(WeaponDef def, Transform hand)
         {
             var model = TryModel(def.model, hand);
             if (model != null) return model;
-
-            var root = new GameObject("Weapon_" + def.id);
-            root.transform.SetParent(hand, false);
-            root.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            var wood = new Color(0.35f, 0.22f, 0.12f);
-            if (def.Kind == WeaponKind.Firearm)
-            {
-                Prim.Make(PrimitiveType.Cube, root.transform, new Vector3(0f, def.length * 0.35f, 0f), new Vector3(0.06f, def.length * 0.8f, 0.08f), wood, "Stock");
-                var barrel = Prim.Make(PrimitiveType.Cylinder, root.transform, new Vector3(0f, def.length * 0.55f, 0.04f), new Vector3(0.035f, def.length * 0.45f, 0.035f), def.Tint, "Barrel");
-                if (def.pellets > 1) barrel.transform.localScale = new Vector3(0.08f, def.length * 0.45f, 0.08f);
-            }
-            else
-            {
-                bool pole = def.length > 1.6f;
-                if (pole)
-                {
-                    Prim.Make(PrimitiveType.Cylinder, root.transform, new Vector3(0f, def.length * 0.3f, 0f), new Vector3(0.04f, def.length * 0.5f, 0.04f), wood, "Shaft");
-                    Prim.Make(PrimitiveType.Cube, root.transform, new Vector3(0f, def.length * 0.8f, 0f), new Vector3(0.22f, 0.3f, 0.02f), def.Tint, "Head");
-                }
-                else
-                {
-                    Prim.Make(PrimitiveType.Cube, root.transform, new Vector3(0f, 0.05f, 0f), new Vector3(0.04f, 0.16f, 0.04f), wood, "Grip");
-                    Prim.Make(PrimitiveType.Cube, root.transform, new Vector3(0f, 0.14f, 0f), new Vector3(0.18f, 0.03f, 0.05f), new Color(0.7f, 0.6f, 0.3f), "Guard");
-                    float bladeW = def.Weight == WeightClass.Great ? 0.09f : def.Weight == WeightClass.Light ? 0.035f : 0.06f;
-                    Prim.Make(PrimitiveType.Cube, root.transform, new Vector3(0f, 0.15f + def.length * 0.5f, 0f), new Vector3(bladeW, def.length, 0.012f), def.Tint, "Blade");
-                }
-            }
-            return root;
+            return Gear.Weapon(def, hand);
         }
     }
 }

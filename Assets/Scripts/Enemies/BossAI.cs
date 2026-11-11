@@ -48,10 +48,8 @@ namespace Hollowmark.Enemies
             ai.nextSlam = Time.time + 6f;
             ai.Current = State.Idle;
 
-            // A brutal placeholder weapon in the boss's hand.
-            if (ai.Rig.Hand != null)
-                Prim.Make(PrimitiveType.Cube, ai.Rig.Hand, new Vector3(0f, 0f, boss.height * 0.25f),
-                    new Vector3(boss.width * 0.25f, boss.width * 0.2f, boss.height * 0.5f), new Color(0.3f, 0.28f, 0.26f), "BossWeapon");
+            // Crown, armour, cape and the boss's signature weapon (unless a real model was supplied).
+            if (string.IsNullOrEmpty(boss.model) || ai.Rig.Body != null) Gear.BossRegalia(ai.Rig, boss);
             ai.Rig.CollectRenderers();
             return ai;
         }

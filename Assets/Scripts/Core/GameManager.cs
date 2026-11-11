@@ -56,6 +56,7 @@ namespace Hollowmark
             sun.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
             sun.transform.SetParent(transform, false);
 
+            Visuals.Atmosphere.Setup(cam, sun);
             weather = gameObject.AddComponent<WeatherSystem>();
             weather.Sun = sun;
 
@@ -149,6 +150,8 @@ namespace Hollowmark
             var root = NewWorld("World_Village");
             float yaw;
             SpawnPoint = VillageBuilder.Build(root, out yaw);
+            Scenery.Village(root);
+            Scenery.Dress(root);
             weather.SetWeathers(new[] { "village_fair", "village_drizzle" }, 240f, true);
             hero.Controller.Teleport(SpawnPoint, yaw);
             Hud.Instance.Banner("Hollowmark Village", "Day " + Day + ". Rest, trade and train before the next descent.");
@@ -160,6 +163,8 @@ namespace Hollowmark
             var root = NewWorld("World_" + d.id);
             float yaw;
             SpawnPoint = DungeonBuilder.Build(d, root, BossDefeated(d), out yaw);
+            Scenery.Dungeon(root, d);
+            Scenery.Dress(root);
             weather.SetWeathers(d.weathers, d.weatherChangeSeconds, false);
             hero.Controller.Teleport(SpawnPoint, yaw);
             Hud.Instance.Banner(d.name, d.description);

@@ -155,7 +155,7 @@ namespace Hollowmark.Visuals
             var bind = new Matrix4x4[BoneCount];
             for (int i = 0; i < BoneCount; i++) bind[i] = bones[i].worldToLocalMatrix * skinGo.transform.localToWorldMatrix;
             Setup(smr, mesh, bones, bind, height);
-            smr.sharedMaterials = new[] { Prim.Mat(skin), Prim.Mat(new Color(0.95f, 0.94f, 0.92f)) };
+            smr.sharedMaterials = new[] { Prim.Mat(skin, Surface.Skin), Prim.Mat(new Color(0.95f, 0.94f, 0.92f), Surface.Wet) };
 
             rig.Body = bones[Body]; rig.Torso = bones[Torso]; rig.Head = bones[HeadBone];
             rig.LeftArm = bones[ArmL]; rig.LeftElbow = bones[ElbowL]; rig.RightArm = bones[ArmR]; rig.RightElbow = bones[ElbowR];
@@ -217,6 +217,7 @@ namespace Hollowmark.Visuals
             mesh.SetTriangles(topo.EyeTris, 1);
             mesh.boneWeights = topo.Weights;
             mesh.RecalculateNormals();
+            mesh.uv = Surfaces.BoxUV(v, mesh.normals, Vector3.one); // in metres, for the skin texture
             mesh.RecalculateBounds();
             meshes[key] = mesh;
             return mesh;
@@ -269,6 +270,7 @@ namespace Hollowmark.Visuals
                 mesh.boneWeights = weights.ToArray();
                 mesh.bindposes = fit.BindPoses;
                 mesh.RecalculateNormals();
+                mesh.uv = Surfaces.BoxUV(verts.ToArray(), mesh.normals, Vector3.one);
                 mesh.RecalculateBounds();
                 if (keep == null) meshes[key] = mesh;
             }
@@ -276,7 +278,7 @@ namespace Hollowmark.Visuals
             go.transform.SetParent(fit.Root, false);
             var smr = go.AddComponent<SkinnedMeshRenderer>();
             Setup(smr, mesh, fit.Bones, fit.BindPoses, rig.Height);
-            smr.sharedMaterial = Prim.Mat(color);
+            smr.sharedMaterial = Prim.Mat(color, Surfaces.ForGarment(name, color));
             return go;
         }
 
@@ -303,7 +305,17 @@ namespace Hollowmark.Visuals
                 var world = fit.Root.TransformPoint(e + new Vector3(0f, 0f, 0.0143f * fit.Scale));
                 var eye = Prim.Make(PrimitiveType.Sphere, rig.Head, rig.Head.InverseTransformPoint(world),
                     new Vector3(0.011f, 0.011f, 0.004f) * fit.Scale * size / (rig.Head.localScale.x * rig.Torso.localScale.x), iris, glow ? "Eye" : "Iris", false, glow);
-                into.Add(eye.GetComponent<Renderer>());
+                var r = eye.GetComponent<Renderer>();
+                if (!glow)
+                {
+                    // A glossy iris with a dark pupil, so the eyes catch the light.
+                    r.sharedMaterial = Prim.Mat(iris, Surface.Wet);
+                    var pupil = Prim.Make(PrimitiveType.Sphere, eye.transform, new Vector3(0f, 0f, 0.35f), new Vector3(0.45f, 0.45f, 0.4f), new Color(0.02f, 0.02f, 0.02f), "Pupil");
+                    pupil.GetComponent<Renderer>().sharedMaterial = Prim.Mat(new Color(0.02f, 0.02f, 0.02f), Surface.Wet);
+                    pupil.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                into.Add(r);
             }
         }
 

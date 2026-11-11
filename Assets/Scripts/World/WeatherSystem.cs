@@ -33,7 +33,7 @@ namespace Hollowmark.World
             Instance = this;
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             BuildParticles();
         }
 
@@ -64,7 +64,7 @@ namespace Hollowmark.World
             {
                 RenderSettings.fogColor = fogTarget;
                 RenderSettings.fogDensity = fogDensityTarget;
-                RenderSettings.ambientLight = ambientTarget;
+                Atmosphere.SetAmbient(ambientTarget, fogTarget);
                 if (Sun != null) { Sun.color = lightTarget; Sun.intensity = lightIntensityTarget; }
             }
             if (changed && !string.IsNullOrEmpty(next.message) && Hero.Instance != null)
@@ -77,13 +77,14 @@ namespace Hollowmark.World
             if (Time.time > nextChange) Pick(false);
 
             // Day/night only matters outdoors.
-            float dayLight = 1f;
+            float dayLight = 1f, dusk = 0f;
             nightChill = 0f;
             if (Outdoors && GameManager.Instance != null)
             {
                 float hour = GameManager.Instance.Hour;
                 float sunHeight = Mathf.Sin((hour - 6f) / 24f * Mathf.PI * 2f); // -1..1, peaks at noon
                 dayLight = Mathf.Clamp01(sunHeight * 1.5f + 0.35f);
+                dusk = Mathf.Clamp01(1f - Mathf.Abs(sunHeight) * 3f); // golden light around sunrise and sunset
                 nightChill = -6f * (1f - dayLight);
                 if (Sun != null) Sun.transform.rotation = Quaternion.Euler(Mathf.Lerp(-10f, 170f, (hour - 5f) / 15f), -30f, 0f);
             }
@@ -91,13 +92,14 @@ namespace Hollowmark.World
             float k = Time.deltaTime * 0.3f;
             RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, fogTarget * Mathf.Lerp(0.25f, 1f, dayLight), k);
             RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, fogDensityTarget, k);
-            RenderSettings.ambientLight = Color.Lerp(RenderSettings.ambientLight, ambientTarget * Mathf.Lerp(0.3f, 1f, dayLight), k);
-            var cam = Camera.main;
-            if (cam != null) { cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = RenderSettings.fogColor; }
+            // Night is darker and bluer (moonlight), day takes the weather's own ambient colour.
+            var ambientNow = Color.Lerp(ambientTarget * new Color(0.45f, 0.55f, 0.85f) * 0.45f, ambientTarget, dayLight);
+            Atmosphere.SetAmbient(Color.Lerp(RenderSettings.ambientSkyColor / 1.1f, ambientNow, k), fogTarget);
+            Atmosphere.UpdateSky(RenderSettings.fogColor, dayLight, Outdoors);
 
             if (Sun != null)
             {
-                Sun.color = Color.Lerp(Sun.color, lightTarget, k);
+                Sun.color = Color.Lerp(Sun.color, Color.Lerp(lightTarget, new Color(1f, 0.62f, 0.38f), dusk * 0.65f), k);
                 float target = lightIntensityTarget * dayLight;
                 if (Current.lightning && Time.time > nextLightning)
                 {
@@ -129,8 +131,7 @@ namespace Hollowmark.World
             shape.shapeType = ParticleSystemShapeType.Box;
             shape.scale = new Vector3(30f, 1f, 30f);
             var r = go.GetComponent<ParticleSystemRenderer>();
-            var shader = Prim.ParticleShader;
-            if (shader != null) r.sharedMaterial = new Material(shader);
+            if (Prim.ParticleShader != null) r.sharedMaterial = Prim.ParticleMat(Color.white);
         }
 
         void ConfigureParticles(WeatherDef w)
