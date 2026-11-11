@@ -153,7 +153,7 @@ namespace Hollowmark.Player
 
         public void TakeDamage(DamageInfo info)
         {
-            if (Dead || Rolling) return;
+            if (Dead || Rolling || info.Amount <= 0f) return;
             float dmg = info.Amount;
 
             if (Blocking && info.IsMelee)
@@ -197,7 +197,7 @@ namespace Hollowmark.Player
 
         void Hurt(float amount, string cause)
         {
-            if (Dead || amount <= 0f) return;
+            if (Dead || amount <= 0f || float.IsNaN(amount)) return;
             Health -= amount;
             if (Health <= 0f)
             {
@@ -221,7 +221,7 @@ namespace Hollowmark.Player
 
         public void Consume(ItemDef item)
         {
-            if (item == null) return;
+            if (Dead || item == null) return;
             if (!item.Usable) { Message(item.name + " needs to be cooked or built with first."); return; }
             if (!Inventory.TakeItem(item.id)) return;
             Hunger = Mathf.Clamp(Hunger + item.hunger, 0f, 100f);

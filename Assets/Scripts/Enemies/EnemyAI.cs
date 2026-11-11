@@ -27,7 +27,7 @@ namespace Hollowmark.Enemies
         protected float stamina;
         protected float verticalSpeed;
         protected Vector3 home;
-        float strafePhase = Random.Range(0f, 100f);
+        float strafePhase; // set in Setup: Unity forbids Random in field initializers
         float recoverUntil;
         float stunUntil;
         bool ambushReady;
@@ -67,6 +67,7 @@ namespace Hollowmark.Enemies
             MaxHealth = Health = def.health * tierScale;
             stamina = def.stamina;
             home = transform.position;
+            strafePhase = Random.Range(0f, 100f);
 
             var model = CharacterBuilder.TryModel(def.model, transform);
             var palette = def.skinColors != null && def.skinColors.Length > 0 ? def.skinColors : new[] { "#606060" };
@@ -105,6 +106,7 @@ namespace Hollowmark.Enemies
         protected virtual void Update()
         {
             if (Current == State.Dead) return;
+            if (transform.position.y < -30f) { ReturnHome(); return; } // fell through the floor
             var hero = Player;
             if (hero == null || hero.Stats.Dead) { Rig.MoveSpeed = 0f; ApplyGravity(Vector3.zero); return; }
 
@@ -175,6 +177,15 @@ namespace Hollowmark.Enemies
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
         }
 
+        void ReturnHome()
+        {
+            if (cc == null) cc = GetComponent<CharacterController>();
+            cc.enabled = false;
+            transform.position = home + Vector3.up * 0.3f;
+            cc.enabled = true;
+            verticalSpeed = 0f;
+        }
+
         protected void Move(Vector3 horizontal)
         {
             ApplyGravity(horizontal);
@@ -227,7 +238,7 @@ namespace Hollowmark.Enemies
         {
             if (Current == State.Dead) return;
             if (Current == State.Hidden) Reveal();
-            Health -= info.Amount;
+            Health -= Mathf.Max(0f, info.Amount);
             Rig.PlayHurt();
             Effects.HitSpark(transform.position + Vector3.up * Def.height * 0.6f, new Color(0.6f, 0.05f, 0.05f));
             stunUntil = Time.time + 0.15f;

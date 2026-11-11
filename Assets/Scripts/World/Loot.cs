@@ -59,7 +59,16 @@ namespace Hollowmark.World
 
         static LootPickup Make(Vector3 pos, Color c, string label)
         {
+            // Sit on whatever floor is below, so drops never sink into the ground or float in the air.
             pos.y = Mathf.Max(pos.y, 0.3f);
+            var hits = Physics.RaycastAll(pos + Vector3.up * 1.5f, Vector3.down, 6f, ~0, QueryTriggerInteraction.Ignore);
+            float best = float.MaxValue;
+            foreach (var h in hits)
+            {
+                // Ignore creatures and the hero standing on the spot.
+                if (h.collider is CharacterController || h.collider.GetComponentInParent<IDamageable>() != null) continue;
+                if (h.distance < best) { best = h.distance; pos.y = h.point.y + 0.3f; }
+            }
             var go = new GameObject("Loot_" + label);
             go.transform.position = pos;
             if (GameManager.Instance != null) go.transform.SetParent(GameManager.Instance.WorldRoot, true);
@@ -103,8 +112,14 @@ namespace Hollowmark.World
             return "Take";
         }
 
+        bool taken;
+
+        public override bool CanUse(Hero hero) { return !taken; }
+
         public override void Interact(Hero hero)
         {
+            if (taken) return; // Destroy happens at the end of the frame; never give the loot twice
+            taken = true;
             var inv = hero.Stats.Inventory;
             if (GoldAmount > 0) { inv.Gold += GoldAmount; inv.NotifyChanged(); hero.Say("+" + GoldAmount + " gold"); }
             if (WeaponDrop != null)

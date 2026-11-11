@@ -222,7 +222,8 @@ namespace Hollowmark.Visuals
             var go = Object.Instantiate(prefab, parent);
             go.transform.localPosition = Vector3.zero;
             go.transform.localRotation = Quaternion.identity;
-            foreach (var c in go.GetComponentsInChildren<Collider>()) Object.Destroy(c);
+            // Immediate, so a model's colliders can never block or confuse hit checks for even one frame.
+            foreach (var c in go.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(c);
             return go;
         }
 

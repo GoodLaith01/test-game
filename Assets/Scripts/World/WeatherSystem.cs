@@ -103,7 +103,7 @@ namespace Hollowmark.World
                 {
                     nextLightning = Time.time + Random.Range(6f, 18f);
                     Sun.intensity = 3f;
-                    if (Hero.Instance != null && Random.value < 0.3f) Hero.Instance.Cam.Shake(0.6f);
+                    if (Hero.Instance != null && Hero.Instance.Cam != null && Random.value < 0.3f) Hero.Instance.Cam.Shake(0.6f);
                 }
                 Sun.intensity = Mathf.Lerp(Sun.intensity, target, Time.deltaTime * 4f);
             }
