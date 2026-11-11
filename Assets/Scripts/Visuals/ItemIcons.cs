@@ -727,6 +727,7 @@ namespace Hollowmark.Visuals
             {
                 case "bread": Bread(c, t); break;
                 case "salt_pork": Ham(c, t); break;
+                case "owl_vole": case "owl_mouse": case "owl_rat": case "owl_rabbit": Ham(c, t); break; // Mofven's catch
                 case "apple": Apple(c, t); break;
                 case "cheese": Cheese(c, t); break;
                 case "hardtack": Biscuit(c, t); break;

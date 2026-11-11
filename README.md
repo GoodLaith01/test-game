@@ -113,6 +113,14 @@ village it is raided. Killing a boss lowers threat a lot.
   and Mistress Thorne (poison cures) give short quest chains. A yellow ! means a new task, a green ? means it's ready to
   hand in. Rewards are gold, items, recipes and blueprints. Active quests show in the top-right corner.
 
+**Mofven the owl.** On each dungeon visit there is a 20% chance that a lone, hungry eagle-owl is perched on a broken
+pillar in one of the rooms (you hear him hooting when you arrive). Feed him meat with E (Raw Mutton from Goody Pell's
+larder, Salted Pork, or small game) and he becomes your pet, Mofven, for the rest of the run. He flies after you
+everywhere, lands at your side when you stand still, and swivels his head the way owls do. He feeds himself by hunting.
+When your pack has no food left, he hunts for you too: he eats his share first and brings you what a grown owl can
+carry, such as a field vole, a wood mouse, a cave rat in the dungeons, or now and then a young rabbit (press Q to eat).
+Hunts take about half a minute and sometimes fail. The chance and timings are constants at the top of `Pets/Mofven.cs`.
+
 ## Adding content (data-driven)
 
 Everything is in `Assets/Resources/Data/*.json`. Ids link entries together, and typos are reported as console warnings on load.
@@ -205,6 +213,7 @@ Assets/Scripts
   World/     VillageBuilder, ShopBuildings (forge, armoury, provisions shop), DungeonBuilder, WeatherSystem,
              Interactables (bed, tent, campfire, shop, dummy, weights, gates, portals, crates), Loot,
              VillageRaid (villagers, raids)
+  Pets/      Mofven (the owl: dungeon spawn, taming, following, hunting)
   UI/        Hud (IMGUI: bars, shop, inventory, death, effects)
   Visuals/   Prim (primitives/materials), HumanMesh (realistic skinned bodies), BodyMesh (fallback bodies), CharacterRig (rig, faces, clothes, animation), Effects,
              ItemIcons + IconCanvas (painted pictures of every weapon, armor piece and supply)

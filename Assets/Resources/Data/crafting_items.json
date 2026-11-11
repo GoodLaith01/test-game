@@ -18,6 +18,10 @@
     { "id": "hollow_locket", "name": "Hollowed Locket", "description": "A keepsake taken from one of the Hollowed. Someone in the village may know whose it was.", "kind": "Material", "price": 8, "color": "#C0A050" },
     { "id": "crawler_venom", "name": "Crawler Venom Sac", "description": "Handle with care. The herbwife turns it into a cure for its own poison.", "kind": "Ingredient", "price": 8, "color": "#40C080" },
     { "id": "imp_ember", "name": "Imp Ember", "description": "Still warm. Bakers would kill for an oven coal like this.", "kind": "Ingredient", "price": 9, "color": "#FF7020" },
+    { "id": "owl_vole", "name": "Field Vole", "description": "Caught by Mofven. Small, but it keeps you going.", "kind": "Food", "hunger": 8, "price": 1, "sold": false, "color": "#7A5A40" },
+    { "id": "owl_mouse", "name": "Wood Mouse", "description": "Caught by Mofven. Barely a mouthful.", "kind": "Food", "hunger": 5, "price": 1, "sold": false, "color": "#8A6A50" },
+    { "id": "owl_rat", "name": "Cave Rat", "description": "Caught by Mofven in the tunnels. Stringy, but it is meat.", "kind": "Food", "hunger": 11, "price": 1, "sold": false, "color": "#5A4A40" },
+    { "id": "owl_rabbit", "name": "Young Rabbit", "description": "Caught by Mofven. About as big as a grown owl can carry.", "kind": "Food", "hunger": 20, "price": 3, "sold": false, "color": "#A08060" },
     { "id": "brute_tusk", "name": "Rotfang Tusk", "description": "Heavy and full of marrow.", "kind": "Ingredient", "price": 10, "color": "#E0D8B0" },
 
     { "id": "hunters_stew", "name": "Hunter's Stew", "description": "Thick mutton stew. Slowly heals you.", "kind": "Meal", "hunger": 50, "thirst": 10, "buff": "hearty", "price": 14, "vendor": "peddler", "color": "#8A5030" },
