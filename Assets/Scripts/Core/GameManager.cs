@@ -43,6 +43,8 @@ namespace Hollowmark
             Instance = null;
             EnemyAI.All.Clear();
             Hud.ClearMessages();
+            Family.Family.Reset();
+            Family.Kid.All.Clear();
         }
 
         void OnDestroy()
@@ -82,6 +84,7 @@ namespace Hollowmark
             WorldMinutes = GameDatabase.Balance.startHour * 60f;
             gameObject.AddComponent<Hud>();
             gameObject.AddComponent<Crafting.CraftingUi>(); // cooking, building and quest panels
+            gameObject.AddComponent<Family.FamilyUi>();     // talking to Olmar
             hero = Hero.Create(cam);
             hero.Stats.OnMessage += Hud.Push;
             EnterVillage();
@@ -194,6 +197,7 @@ namespace Hollowmark
             Scenery.Dress(root);
             weather.SetWeathers(d.weathers, d.weatherChangeSeconds, false);
             hero.Controller.Teleport(SpawnPoint, yaw);
+            Family.Olmar.SpawnInDungeon(root, SpawnPoint, yaw); // only once he is 16 and you asked him along
             Hud.Instance.Banner(d.name, d.description);
         }
 
