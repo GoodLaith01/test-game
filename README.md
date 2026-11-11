@@ -35,6 +35,8 @@ Handling** to *Both*.
 | E | Interact (hold E on the weights) |
 | Tab or I | Inventory: equip weapons, wear armor, use items |
 | Q / F / H | Eat the best food / drink / use a bandage |
+| K | Skills: character level, skill trees, perks and ability keys |
+| 1 / 2 / 3 / 4 | Use the abilities on those keys |
 | Esc or F1 | Pause and help |
 
 ## What is in the slice
@@ -112,6 +114,33 @@ village it is raided. Killing a boss lowers threat a lot.
 - *Quests*: Granny Hobb (cooking), Abel the Joiner (building), Sergeant Pike (dungeon trophies such as Gnarling ears)
   and Mistress Thorne (poison cures) give short quest chains. A yellow ! means a new task, a green ? means it's ready to
   hand in. Rewards are gold, items, recipes and blueprints. Active quests show in the top-right corner.
+
+## Levels, skills and abilities (RPG system)
+
+Everything here is tuned in `Assets/Resources/Data/skills.json`.
+
+**Character level (1 to 30).** You earn XP by killing creatures (more for tougher ones), killing bosses (a big
+bonus per dungeon tier), finishing villager quests, beating back a village raid, and raising a practice skill.
+Each level gives +5 max health, +3 max stamina, a full heal and **one skill point**. Every 5th level gives a bonus point.
+
+**Practice skills** grow by doing, and the upper tiers of each tree need them:
+Strength (weights, heavy weapons), Endurance (weights, fighting), Swordsmanship (dummies, melee hits),
+Marksmanship (landing shots: firearm damage, reload and aim) and Athletics (sprinting, rolling, jumping: cheaper
+movement and a little speed).
+
+**Three skill trees** (press K). Each has four tiers. A tier opens after you spend 0, 3, 6 or 10 points in that
+tree, and tiers III and IV also need the tree's practice skill at 3 and 6. There are 48 ranks and only 35 points
+by level 30, so you choose a build.
+
+| Tree | Perks | Abilities |
+| --- | --- | --- |
+| Blade (Swordsmanship) | Keen Edge, Iron Guard, Bloodletter, Butcher's Mark, Bloodthirst (life steal), Duelist's Grace | Whirlwind, Lunge |
+| Powder (Marksmanship) | Steady Hands, Quick Loader, Powder Thrift, Heavy Ball, Hunter's Eye, Executioner | Dead-Eye, Smoke and Thunder |
+| Survivor (Endurance) | Thick Skin, Iron Lungs, Forager's Gut, Cold Blood, Unbroken Mind, Last Stand | Second Wind, Battle Cry |
+
+**Critical hits.** Every hit can be critical (3% base, x1.5 damage); perks raise both.
+**Abilities** cost stamina and have cooldowns. They go on keys 1 to 4 when learned, and you can move them in the
+skills screen. **Forgetting perks** costs gold (40 per level) and only works in the village.
 
 ## Adding content (data-driven)
 

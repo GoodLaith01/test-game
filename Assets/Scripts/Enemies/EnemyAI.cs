@@ -30,6 +30,7 @@ namespace Hollowmark.Enemies
         float strafePhase; // set in Setup: Unity forbids Random in field initializers
         float recoverUntil;
         float stunUntil;
+        float dazedUntil;   // stunned by an ability (Battle Cry, Smoke and Thunder)
         bool ambushReady;
 
         /// <summary>Every creature currently in the world.</summary>
@@ -103,9 +104,25 @@ namespace Hollowmark.Enemies
             Current = State.Chase;
         }
 
+        /// <summary>Stuns the creature in place; bosses shrug it off twice as fast.</summary>
+        public void Stun(float seconds)
+        {
+            if (Current == State.Dead || seconds <= 0f) return;
+            if (this is BossAI) seconds *= 0.5f;
+            if (Current == State.Hidden) Reveal();
+            CancelInvoke("ResolveAttack");
+            if (Current == State.Attack || Current == State.Recover || Current == State.Idle) Current = State.Chase;
+            dazedUntil = Mathf.Max(dazedUntil, Time.time + seconds);
+            stunUntil = Mathf.Max(stunUntil, dazedUntil);
+            Effects.Puff(transform.position + Vector3.up * (Def.height + 0.2f), new Color(1f, 0.9f, 0.4f), 0.3f, seconds);
+        }
+
+        public bool Stunned { get { return Time.time < dazedUntil; } }
+
         protected virtual void Update()
         {
             if (Current == State.Dead) return;
+            if (Stunned) { Rig.MoveSpeed = 0f; ApplyGravity(Vector3.zero); return; }
             if (transform.position.y < -30f) { ReturnHome(); return; } // fell through the floor
             var hero = Player;
             if (hero == null || hero.Stats.Dead) { Rig.MoveSpeed = 0f; ApplyGravity(Vector3.zero); return; }
@@ -238,7 +255,10 @@ namespace Hollowmark.Enemies
         {
             if (Current == State.Dead) return;
             if (Current == State.Hidden) Reveal();
-            Health -= Mathf.Max(0f, info.Amount);
+            float amount = Mathf.Max(0f, info.Amount);
+            // Executioner perk: wounded creatures take extra damage from the hero.
+            if (info.IsPlayer && Health < MaxHealth * 0.3f && Hero.Instance != null) amount *= 1f + Hero.Instance.Stats.Progress.ExecuteBonus;
+            Health -= amount;
             Rig.PlayHurt();
             Effects.HitSpark(transform.position + Vector3.up * Def.height * 0.6f, new Color(0.6f, 0.05f, 0.05f));
             stunUntil = Time.time + 0.15f;
@@ -256,6 +276,7 @@ namespace Hollowmark.Enemies
             if (cc != null) cc.enabled = false;
             foreach (var c in GetComponents<Collider>()) c.enabled = false;
             LootTable.DropFor(this);
+            if (Hero.Instance != null) Hero.Instance.Stats.Progress.OnKill(this); // experience for the kill
             if (Died != null) Died(this);
             Destroy(gameObject, 4f);
         }

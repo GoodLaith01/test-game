@@ -60,6 +60,7 @@ namespace Hollowmark.Enemies
         {
             if (Current == State.Dead || slamming) return;
             base.Update();
+            if (Stunned) return;
             if (Current == State.Chase && Time.time >= nextSlam && Player != null)
             {
                 float dist = Vector3.Distance(Player.transform.position, transform.position);

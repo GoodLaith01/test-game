@@ -240,6 +240,8 @@ namespace Hollowmark.Crafting
             CompletedQuests.Add(q.id);
             Say("Quest complete: " + q.title + "!");
             if (q.rewardGold > 0) { Inv.Gold += q.rewardGold; Say(q.giver + " pays you " + q.rewardGold + " gold."); }
+            if (Hero.Instance != null)
+                Hero.Instance.Stats.Progress.AddXp(SkillDatabase.Config.questXpBase + q.rewardGold * SkillDatabase.Config.questXpPerGold, "for helping " + q.giver);
             Give(q.rewardItems);
             if (q.rewardItems != null && q.rewardItems.Length > 0)
                 Say("You receive " + string.Join(", ", q.rewardItems.Select(CraftingDatabase.StackName).ToArray()) + ".");
