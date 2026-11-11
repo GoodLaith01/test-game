@@ -6,7 +6,7 @@ namespace Hollowmark.World
 {
     /// <summary>
     /// Builds the village hub from primitives: the hero's house (bed), the training yard (dummies, weights),
-    /// the market (weapons, armor, provisions), the well, villagers, and one gate per dungeon in dungeons.json.
+    /// the market (a forge, an armoury and a provisions shop), the well, villagers, and one gate per dungeon in dungeons.json.
     /// </summary>
     public static class VillageBuilder
     {
@@ -152,10 +152,11 @@ namespace Hollowmark.World
             var market = new GameObject("Market").transform;
             market.SetParent(root, false);
             market.localPosition = pos;
-            Stall(market, new Vector3(0f, 0f, -8f), ShopKind.Weapons, "Weaponsmith Hale", new Color(0.6f, 0.2f, 0.2f), 11);
-            Stall(market, new Vector3(0f, 0f, 0f), ShopKind.Armor, "Armorer Briggs", new Color(0.2f, 0.3f, 0.6f), 12);
-            Stall(market, new Vector3(0f, 0f, 8f), ShopKind.Provisions, "Widow Marsh (food, water, medicine)", new Color(0.25f, 0.5f, 0.25f), 13);
-            Prim.Label(market, new Vector3(0f, 5f, 0f), "Market", Color.white, 0.14f);
+            // Each shop has its own building, facing the main road (see ShopBuildings).
+            ShopBuildings.Weaponsmith(market, new Vector3(4f, 0f, -10.5f), 90f, "Weaponsmith Hale", 11);
+            ShopBuildings.Armorer(market, new Vector3(4f, 0f, 2.5f), 90f, "Armorer Briggs", 12);
+            ShopBuildings.Provisioner(market, new Vector3(4f, 0f, 14f), 90f, "Widow Marsh (food, water, medicine)", 13);
+            Prim.Label(market, new Vector3(-2f, 7.5f, 2f), "Market", Color.white, 0.14f);
         }
 
         static void Stall(Transform parent, Vector3 pos, ShopKind kind, string keeper, Color awning, int seed)

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Hollowmark.Data;
 using Hollowmark.Player;
+using Hollowmark.Visuals;
 using Hollowmark.World;
 using UnityEngine;
 
@@ -92,6 +93,8 @@ namespace Hollowmark.UI
             Time.timeScale = GameManager.Instance.Paused ? 0f : 1f;
             Cursor.lockState = menu ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = menu;
+            // Paint item pictures a few at a time behind the intro and pause screens, so shops open without a hitch.
+            if (screen == Screen.Intro || screen == Screen.Help) ItemIcons.WarmUp();
 
             // Quick-use keys.
             if (!menu && !H.Stats.Dead)
@@ -132,6 +135,43 @@ namespace Hollowmark.UI
         }
 
         void Rect(Rect r, Color c) { var old = GUI.color; GUI.color = c; GUI.DrawTexture(r, white); GUI.color = old; }
+
+        // Frame colours for item pictures by tier: plain, green, blue, purple, gold.
+        static readonly Color[] TierFrames =
+        {
+            new Color(0.5f, 0.43f, 0.32f), new Color(0.55f, 0.5f, 0.42f), new Color(0.35f, 0.62f, 0.3f),
+            new Color(0.3f, 0.5f, 0.85f), new Color(0.62f, 0.36f, 0.8f), new Color(0.95f, 0.75f, 0.2f),
+        };
+
+        /// <summary>An item picture in a framed tile, laid out inline with GUILayout.</summary>
+        void Icon(Texture2D tex, float size, int tier = 0)
+        {
+            var r = GUILayoutUtility.GetRect(size, size, GUILayout.Width(size), GUILayout.Height(size));
+            if (Event.current.type != EventType.Repaint) return;
+            Rect(r, TierFrames[Mathf.Clamp(tier, 0, TierFrames.Length - 1)]);
+            var inner = new Rect(r.x + 2, r.y + 2, r.width - 4, r.height - 4);
+            Rect(inner, new Color(0.2f, 0.16f, 0.12f));
+            Rect(new Rect(inner.x, inner.y, inner.width, inner.height * 0.5f), new Color(1f, 1f, 1f, 0.05f));
+            if (tex != null) GUI.DrawTexture(new Rect(inner.x + 1, inner.y + 1, inner.width - 2, inner.height - 2), tex, ScaleMode.ScaleToFit, true);
+        }
+
+        /// <summary>Starts a row with a picture on the left; close it with GUILayout.EndHorizontal.</summary>
+        void IconRow(Texture2D tex, float size, int tier = 0)
+        {
+            GUILayout.BeginHorizontal();
+            Icon(tex, size, tier);
+            GUILayout.Space(6);
+        }
+
+        /// <summary>A button that sits in the vertical middle of a picture row.</summary>
+        bool RowButton(string text, float rowHeight, float width)
+        {
+            GUILayout.BeginVertical(GUILayout.Width(width));
+            GUILayout.Space(Mathf.Max(0f, (rowHeight - 26f) / 2f));
+            bool pressed = GUILayout.Button(text, button, GUILayout.Width(width));
+            GUILayout.EndVertical();
+            return pressed;
+        }
 
         void Bar(float x, float y, string name, float value, float max, Color c, string extra = null)
         {
@@ -351,9 +391,13 @@ namespace Hollowmark.UI
                 int n = inv.Weapons.Count(x => x == wpn);
                 bool eq = inv.Equipped == wpn;
                 string req = H.CanWield(wpn) ? "" : " <color=#ff8080>needs STR " + wpn.requiredStrength + "</color>";
+                IconRow(ItemIcons.For(wpn), 48, wpn.tier);
+                GUILayout.BeginVertical();
                 GUILayout.Label(string.Format("{0}{1}{2}\n<size=11>{3}, dmg {4}, {5}{6}</size>", eq ? "► " : "", wpn.name, n > 1 ? " x" + n : "",
                     wpn.weightClass, wpn.damage, wpn.Kind == WeaponKind.Firearm ? "firearm" : "reach " + wpn.range, req), small);
                 if (!eq && GUILayout.Button("Equip", button, GUILayout.Width(90))) Later(() => H.Equip(wpn));
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
             }
             GUILayout.EndScrollView();
             GUILayout.EndArea();
@@ -367,8 +411,12 @@ namespace Hollowmark.UI
                 ArmorInstance a;
                 if (inv.Worn.TryGetValue(slot, out a))
                 {
+                    IconRow(ItemIcons.For(a.Def), 48, a.Def.tier);
+                    GUILayout.BeginVertical();
                     GUILayout.Label(string.Format("{0}: <b>{1}</b> def {2}, {3:0%}", slot, a.Def.name, a.Def.defense, a.Condition), small);
                     if (GUILayout.Button("Take off", button, GUILayout.Width(90))) { var sl = slot; Later(() => inv.TakeOff(sl)); }
+                    GUILayout.EndVertical();
+                    GUILayout.EndHorizontal();
                 }
                 else GUILayout.Label(slot + ": <color=#999999>nothing</color>", small);
             }
@@ -376,8 +424,12 @@ namespace Hollowmark.UI
             GUILayout.Label("<b>Carried</b>", small);
             foreach (var a in inv.Armor.ToList())
             {
+                IconRow(ItemIcons.For(a.Def), 48, a.Def.tier);
+                GUILayout.BeginVertical();
                 GUILayout.Label(string.Format("{0} ({1}) def {2}, warmth {3:0%}, {4:0%}", a.Def.name, a.Def.slot, a.Def.defense, a.Def.insulation, a.Condition), small);
                 if (GUILayout.Button("Wear", button, GUILayout.Width(90))) Later(() => { if (inv.Armor.Contains(a)) inv.Wear(a); });
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
             }
             GUILayout.EndScrollView();
             GUILayout.EndArea();
@@ -390,9 +442,9 @@ namespace Hollowmark.UI
             {
                 var def = GameDatabase.Item(kv.Key);
                 if (def == null) continue;
-                GUILayout.BeginHorizontal();
+                IconRow(ItemIcons.For(def), 40);
                 GUILayout.Label(def.name + " x" + kv.Value, small);
-                if (def.Usable && GUILayout.Button("Use", button, GUILayout.Width(60))) Later(() => { if (!s.Dead) s.Consume(def); });
+                if (def.Usable && RowButton("Use", 40, 60)) Later(() => { if (!s.Dead) s.Consume(def); });
                 GUILayout.EndHorizontal();
             }
             GUILayout.Space(10);
@@ -406,7 +458,7 @@ namespace Hollowmark.UI
         void ShopScreen(float w, float h)
         {
             if (shop == null) return;
-            var r = Panel(w, h, Mathf.Min(820, w - 40), Mathf.Min(600, h - 40), shop.Keeper);
+            var r = Panel(w, h, Mathf.Min(900, w - 40), Mathf.Min(660, h - 40), shop.Keeper);
             var inv = H.Stats.Inventory;
             GUILayout.BeginArea(new Rect(r.x + 20, r.y + 55, r.width - 40, r.height - 75));
             GUILayout.BeginHorizontal();
@@ -429,19 +481,19 @@ namespace Hollowmark.UI
             {
                 case ShopKind.Weapons:
                     foreach (var wpn in GameDatabase.Weapons.Values.Where(x => x.sold && x.tier <= tier).OrderBy(x => x.price))
-                        Row(string.Format("<b>{0}</b>  {1}, dmg {2}, STR {3}\n<size=11>{4}</size>", wpn.name, wpn.weightClass, wpn.damage, wpn.requiredStrength, wpn.description),
+                        Row(ItemIcons.For(wpn), wpn.tier, string.Format("<b>{0}</b>  {1}, dmg {2}, STR {3}\n<size=11>{4}</size>", wpn.name, wpn.weightClass, wpn.damage, wpn.requiredStrength, wpn.description),
                             wpn.price, () => inv.AddWeapon(wpn));
                     break;
                 case ShopKind.Armor:
                     foreach (var a in GameDatabase.Armor.Values.Where(x => x.sold && x.tier <= tier).OrderBy(x => x.slot).ThenBy(x => x.price))
-                        Row(string.Format("<b>{0}</b>  {1}, def {2}, durability {3}, warmth {4:0%}\n<size=11>{5}</size>", a.name, a.slot, a.defense, a.durability, a.insulation, a.description),
+                        Row(ItemIcons.For(a), a.tier, string.Format("<b>{0}</b>  {1}, def {2}, durability {3}, warmth {4:0%}\n<size=11>{5}</size>", a.name, a.slot, a.defense, a.durability, a.insulation, a.description),
                             a.price, () => inv.AddArmor(a));
                     break;
                 default:
                     foreach (var i in GameDatabase.Items.Values.Where(x => x.sold).OrderBy(x => x.kind).ThenBy(x => x.price))
                     {
                         int count = i.Kind == ItemKind.Ammo ? 5 : 1;
-                        Row(string.Format("<b>{0}</b>{1}  {2}", i.name, count > 1 ? " x" + count : "", Effects(i)), i.price * count, () => inv.AddItem(i.id, count));
+                        Row(ItemIcons.For(i), 0, string.Format("<b>{0}</b>{1}\n<size=11>{2}</size>", i.name, count > 1 ? " x" + count : "", Effects(i)), i.price * count, () => inv.AddItem(i.id, count));
                     }
                     break;
             }
@@ -460,16 +512,17 @@ namespace Hollowmark.UI
             return string.Join(", ", parts.ToArray());
         }
 
-        void Row(string text, int price, System.Action buy)
+        void Row(Texture2D icon, int tier, string text, int price, System.Action buy)
         {
             var inv = H.Stats.Inventory;
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(text, small);
+            IconRow(icon, 64, tier);
+            GUILayout.Label(text, small, GUILayout.MinHeight(64));
             GUI.enabled = inv.Gold >= price;
-            if (GUILayout.Button("Buy " + price, button, GUILayout.Width(100)))
+            if (RowButton("Buy " + price, 64, 100))
                 Later(() => { if (inv.Gold < price) return; inv.Gold -= price; buy(); inv.NotifyChanged(); });
             GUI.enabled = true;
             GUILayout.EndHorizontal();
+            GUILayout.Space(4);
         }
 
         void SellList()
@@ -479,9 +532,9 @@ namespace Hollowmark.UI
             {
                 if (wpn == inv.Equipped && inv.Weapons.Count(x => x == wpn) == 1) continue;
                 int price = Mathf.Max(1, wpn.price * 2 / 5);
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(wpn.name, small);
-                if (GUILayout.Button("Sell " + price, button, GUILayout.Width(100))) Later(() =>
+                IconRow(ItemIcons.For(wpn), 44, wpn.tier);
+                GUILayout.Label(wpn.name, small, GUILayout.MinHeight(44));
+                if (RowButton("Sell " + price, 44, 100)) Later(() =>
                 {
                     // Re-check when the click is applied: never sell the last copy of the weapon in your hand.
                     if (wpn == inv.Equipped && inv.Weapons.Count(x => x == wpn) <= 1) return;
@@ -492,9 +545,9 @@ namespace Hollowmark.UI
             foreach (var a in inv.Armor.ToList())
             {
                 int price = Mathf.Max(1, Mathf.RoundToInt(a.Def.price * 0.4f * a.Condition));
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(string.Format("{0} ({1:0%})", a.Def.name, a.Condition), small);
-                if (GUILayout.Button("Sell " + price, button, GUILayout.Width(100))) Later(() => { if (inv.Armor.Remove(a)) { inv.Gold += price; inv.NotifyChanged(); } });
+                IconRow(ItemIcons.For(a.Def), 44, a.Def.tier);
+                GUILayout.Label(string.Format("{0} ({1:0%})", a.Def.name, a.Condition), small, GUILayout.MinHeight(44));
+                if (RowButton("Sell " + price, 44, 100)) Later(() => { if (inv.Armor.Remove(a)) { inv.Gold += price; inv.NotifyChanged(); } });
                 GUILayout.EndHorizontal();
             }
             foreach (var kv in inv.Items.ToList())
@@ -502,9 +555,9 @@ namespace Hollowmark.UI
                 var def = GameDatabase.Item(kv.Key);
                 if (def == null) continue;
                 int price = Mathf.Max(1, def.price / 2);
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(def.name + " x" + kv.Value, small);
-                if (GUILayout.Button("Sell 1 for " + price, button, GUILayout.Width(120))) Later(() => { if (inv.TakeItem(def.id)) { inv.Gold += price; inv.NotifyChanged(); } });
+                IconRow(ItemIcons.For(def), 44);
+                GUILayout.Label(def.name + " x" + kv.Value, small, GUILayout.MinHeight(44));
+                if (RowButton("Sell 1 for " + price, 44, 120)) Later(() => { if (inv.TakeItem(def.id)) { inv.Gold += price; inv.NotifyChanged(); } });
                 GUILayout.EndHorizontal();
             }
         }

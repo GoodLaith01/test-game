@@ -162,6 +162,18 @@ uses it instead of the generated body (see `CharacterBuilder.TryModel`). If the 
 float, `Attack` and `Hurt` triggers and a `Dead` bool (for example a Mixamo character), the game drives them. The five creature types should each get their
 own sculpted model with several head and body variants to keep the "no two alike" feel.
 
+## Shops and item pictures
+
+The market has three buildings that face the main road: **Hale's Forge** (a soot-dark stone smithy with a glowing
+hearth, anvil, grindstone, chimney smoke and a rack of the smith's real weapons), **Briggs' Armoury** (a two-storey
+timber-framed house with blue shutters and armor stands outside) and **Widow Marsh's Provisions** (a thatched cottage
+with a striped awning, barrels, apple crates, flour sacks and a chalkboard). Walk up to the counter and press E to trade.
+
+Every weapon, armor piece and supply has its own picture in the shop and inventory screens, painted in code the first
+time it's needed (`ItemIcons`). The frame colour shows the tier. A new entry in the JSON files gets a picture for its
+kind automatically. To use your own art instead, drop a PNG at `Assets/Resources/Icons/<id>.png` (for example
+`Icons/cutlass.png`) and the game uses it in place of the painted one.
+
 ## Graphics
 
 - **Textured surfaces.** Every object gets a tileable, bump-mapped texture that fits what it is (grass, cobbles,
@@ -186,10 +198,12 @@ Assets/Scripts
   Player/    Hero, PlayerController, ThirdPersonCamera, PlayerCombat, PlayerStats (survival), Inventory,
              PlayerVisual (armor, underwear), InsanityEffects (whispers, phantoms)
   Enemies/   EnemyAI (stealth, ambush, ranged), BossAI (slam, summons, enrage), Projectile
-  World/     VillageBuilder, DungeonBuilder, WeatherSystem, Interactables (bed, tent, campfire, shop, dummy,
-             weights, gates, portals, crates), Loot, VillageRaid (villagers, raids)
+  World/     VillageBuilder, ShopBuildings (forge, armoury, provisions shop), DungeonBuilder, WeatherSystem,
+             Interactables (bed, tent, campfire, shop, dummy, weights, gates, portals, crates), Loot,
+             VillageRaid (villagers, raids)
   UI/        Hud (IMGUI: bars, shop, inventory, death, effects)
-  Visuals/   Prim (primitives/materials), HumanMesh (realistic skinned bodies), BodyMesh (fallback bodies), CharacterRig (rig, faces, clothes, animation), Effects
+  Visuals/   Prim (primitives/materials), HumanMesh (realistic skinned bodies), BodyMesh (fallback bodies), CharacterRig (rig, faces, clothes, animation), Effects,
+             ItemIcons + IconCanvas (painted pictures of every weapon, armor piece and supply)
 ```
 
 ## Not in this slice yet
