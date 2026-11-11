@@ -15,6 +15,11 @@ namespace Hollowmark.UI
     {
         public static Hud Instance { get; private set; }
 
+        /// <summary>Set by other panels (cooking, building, quests) so the HUD unlocks the cursor and leaves keys alone.</summary>
+        public static bool SideMenuOpen;
+        public static int SideMenuClosedFrame = -1;
+        public bool AnyScreenOpen { get { return screen != Screen.None; } }
+
         class Msg { public string Text; public float Time; }
         static readonly List<Msg> messages = new List<Msg>();
 
@@ -71,7 +76,8 @@ namespace Hollowmark.UI
             if (H.Stats.Dead) screen = Screen.Death;
             else if (screen == Screen.Death) screen = Screen.None;
             if (screen == Screen.Shop && shop == null) screen = Screen.None; // the stall's world was unloaded
-            if (screen != Screen.Death)
+            bool side = SideMenuOpen || SideMenuClosedFrame == Time.frameCount;
+            if (screen != Screen.Death && !side)
             {
                 if (GameInput.KeyDown(KeyCode.Tab) || GameInput.KeyDown(KeyCode.I))
                     screen = screen == Screen.Inventory ? Screen.None : (screen == Screen.None ? Screen.Inventory : screen);
@@ -80,9 +86,9 @@ namespace Hollowmark.UI
                     screen = screen == Screen.None ? Screen.Help : Screen.None;
             }
 
-            bool menu = screen != Screen.None;
+            bool menu = screen != Screen.None || SideMenuOpen;
             H.InputLocked = menu;
-            GameManager.Instance.Paused = menu && screen != Screen.Shop && screen != Screen.Inventory;
+            GameManager.Instance.Paused = screen != Screen.None && screen != Screen.Shop && screen != Screen.Inventory;
             Time.timeScale = GameManager.Instance.Paused ? 0f : 1f;
             Cursor.lockState = menu ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = menu;
@@ -197,7 +203,7 @@ namespace Hollowmark.UI
             GUI.Label(new Rect(rx, h - 26, 330, 22), "Tab inventory   Q eat   F drink   H heal   F1 help", small);
 
             // Crosshair and prompt.
-            if (screen == Screen.None)
+            if (screen == Screen.None && !SideMenuOpen)
             {
                 Rect(new Rect(w / 2 - 1, h / 2 - 8, 2, 16), new Color(1, 1, 1, 0.6f));
                 Rect(new Rect(w / 2 - 8, h / 2 - 1, 16, 2), new Color(1, 1, 1, 0.6f));
@@ -386,7 +392,7 @@ namespace Hollowmark.UI
                 if (def == null) continue;
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(def.name + " x" + kv.Value, small);
-                if (def.Kind != ItemKind.Ammo && GUILayout.Button("Use", button, GUILayout.Width(60))) Later(() => { if (!s.Dead) s.Consume(def); });
+                if (def.Usable && GUILayout.Button("Use", button, GUILayout.Width(60))) Later(() => { if (!s.Dead) s.Consume(def); });
                 GUILayout.EndHorizontal();
             }
             GUILayout.Space(10);

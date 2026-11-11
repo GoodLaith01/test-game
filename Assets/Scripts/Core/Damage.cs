@@ -9,6 +9,7 @@ namespace Hollowmark
         public GameObject Source;
         public bool IsPlayer;      // dealt by the player
         public bool IsMelee;
+        public float Poison;       // poison added to the hero on a hit
     }
 
     public interface IDamageable

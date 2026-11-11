@@ -29,6 +29,7 @@ namespace Hollowmark.World
             Market(root, new Vector3(18f, 0f, 0f));
             Well(root, new Vector3(0f, 0f, 0f));
             Gates(root);
+            Crafting.HomesteadBuilder.Build(root); // hearth, building plots, quest givers, larder and peddler
 
             // Decorative houses for the villagers.
             Building(root, new Vector3(18f, 0f, -18f), new Vector3(7f, 3.5f, 6f), Plaster, false, "Cottage");

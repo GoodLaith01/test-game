@@ -79,6 +79,7 @@ namespace Hollowmark
 
             WorldMinutes = GameDatabase.Balance.startHour * 60f;
             gameObject.AddComponent<Hud>();
+            gameObject.AddComponent<Crafting.CraftingUi>(); // cooking, building and quest panels
             hero = Hero.Create(cam);
             hero.Stats.OnMessage += Hud.Push;
             EnterVillage();

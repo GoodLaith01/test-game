@@ -227,7 +227,7 @@ namespace Hollowmark.Enemies
                 {
                     var to = hero.transform.position - transform.position; to.y = 0f;
                     if (to.magnitude <= Def.attackRange + 0.4f && Vector3.Angle(transform.forward, to) < 70f)
-                        hero.Stats.TakeDamage(new DamageInfo { Amount = dmg, From = transform.position, Source = gameObject, IsMelee = true });
+                        hero.Stats.TakeDamage(new DamageInfo { Amount = dmg, From = transform.position, Source = gameObject, IsMelee = true, Poison = Def.poison * tierScale });
                 }
             }
             Current = State.Recover;

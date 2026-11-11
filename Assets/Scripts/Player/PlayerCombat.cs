@@ -67,6 +67,7 @@ namespace Hollowmark.Player
             if (w.Weight == WeightClass.Heavy || w.Weight == WeightClass.Great) dmg *= 1f + 0.06f * (s.Strength.Level - 1);
             if (s.Hunger < 15f) dmg *= 0.8f;
             dmg *= 1f - 0.35f * s.MindPenalty;
+            dmg *= s.Buffs.DamageMultiplier; // cooked meals and the grinding wheel
             return dmg * Random.Range(0.9f, 1.1f);
         }
 

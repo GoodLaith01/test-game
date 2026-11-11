@@ -1,0 +1,30 @@
+{
+  "items": [
+    { "id": "flour", "name": "Sack of Flour", "kind": "Ingredient", "price": 3, "vendor": "larder", "color": "#E8E0C8" },
+    { "id": "raw_meat", "name": "Raw Mutton", "kind": "Ingredient", "price": 5, "vendor": "larder", "color": "#B04848" },
+    { "id": "onion", "name": "Onion", "kind": "Ingredient", "price": 1, "vendor": "larder", "color": "#D8B070" },
+    { "id": "garlic", "name": "Garlic Bulb", "description": "Herbwives swear it draws poison from the blood.", "kind": "Ingredient", "price": 2, "vendor": "larder", "color": "#F0ECD8" },
+    { "id": "wild_herbs", "name": "Bundle of Wild Herbs", "kind": "Ingredient", "price": 2, "vendor": "larder", "color": "#5A8A40" },
+    { "id": "honey", "name": "Pot of Honey", "kind": "Ingredient", "price": 6, "vendor": "larder", "color": "#E0A020" },
+    { "id": "salt", "name": "Pinch of Salt", "kind": "Ingredient", "price": 1, "vendor": "larder", "color": "#F8F8F8" },
+    { "id": "milk", "name": "Jug of Milk", "kind": "Ingredient", "price": 2, "vendor": "larder", "color": "#F4F4EC" },
+
+    { "id": "timber", "name": "Timber Plank", "kind": "Material", "price": 4, "vendor": "larder", "color": "#8A6038" },
+    { "id": "stone_block", "name": "Dressed Stone", "kind": "Material", "price": 5, "vendor": "larder", "color": "#9A9A92" },
+    { "id": "iron_nails", "name": "Box of Iron Nails", "kind": "Material", "price": 6, "vendor": "larder", "color": "#505058" },
+    { "id": "rope", "name": "Coil of Rope", "kind": "Material", "price": 3, "vendor": "larder", "color": "#B09060" },
+
+    { "id": "gnarl_ear", "name": "Gnarling Ear", "description": "Proof of a kill. Sergeant Pike pays for these.", "kind": "Material", "price": 4, "color": "#5A6A40" },
+    { "id": "hollow_locket", "name": "Hollowed Locket", "description": "A keepsake taken from one of the Hollowed. Someone in the village may know whose it was.", "kind": "Material", "price": 8, "color": "#C0A050" },
+    { "id": "crawler_venom", "name": "Crawler Venom Sac", "description": "Handle with care. The herbwife turns it into a cure for its own poison.", "kind": "Ingredient", "price": 8, "color": "#40C080" },
+    { "id": "imp_ember", "name": "Imp Ember", "description": "Still warm. Bakers would kill for an oven coal like this.", "kind": "Ingredient", "price": 9, "color": "#FF7020" },
+    { "id": "brute_tusk", "name": "Rotfang Tusk", "description": "Heavy and full of marrow.", "kind": "Ingredient", "price": 10, "color": "#E0D8B0" },
+
+    { "id": "hunters_stew", "name": "Hunter's Stew", "description": "Thick mutton stew. Slowly heals you.", "kind": "Meal", "hunger": 50, "thirst": 10, "buff": "hearty", "price": 14, "vendor": "peddler", "color": "#8A5030" },
+    { "id": "honey_cakes", "name": "Honey Cakes", "description": "Sweet, and they keep your legs going.", "kind": "Meal", "hunger": 25, "buff": "second_wind", "price": 12, "vendor": "peddler", "color": "#E0B050" },
+    { "id": "garlic_broth", "name": "Garlic Broth", "description": "It stinks, and poison can barely touch you.", "kind": "Meal", "hunger": 20, "thirst": 25, "buff": "poison_ward", "price": 16, "vendor": "peddler", "color": "#D8D0A0" },
+    { "id": "venom_theriac", "name": "Venom Theriac", "description": "An apothecary's antidote. Cures poison at once and guards against it for a while.", "kind": "Tonic", "health": 15, "buff": "theriac", "price": 25, "vendor": "peddler", "color": "#40A070" },
+    { "id": "ember_pie", "name": "Ember-Baked Pie", "description": "Baked over an imp's coal. Fills you with fury.", "kind": "Meal", "hunger": 40, "warmth": 1.0, "buff": "battle_fury", "price": 30, "vendor": "peddler", "color": "#C06020" },
+    { "id": "marrow_soup", "name": "Tusk Marrow Soup", "description": "Rotfang marrow makes your skin tough as boot leather.", "kind": "Meal", "hunger": 35, "thirst": 15, "buff": "iron_skin", "price": 32, "vendor": "peddler", "color": "#C8B890" }
+  ]
+}

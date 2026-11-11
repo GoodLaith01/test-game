@@ -37,7 +37,7 @@ namespace Hollowmark.Enemies
             {
                 id = boss.id, name = boss.name, description = boss.description, bodyShape = boss.bodyShape,
                 height = boss.height, width = boss.width, moveSpeed = boss.moveSpeed, health = boss.health,
-                damage = boss.damage, attackTime = boss.attackTime, attackRange = boss.attackRange,
+                damage = boss.damage, attackTime = boss.attackTime, attackRange = boss.attackRange, poison = boss.poison,
                 sightRange = 30f, stamina = 9999f, stealth = "None", strangeWeapon = boss.weaponName,
                 skinColors = new[] { boss.color }, eyeColor = boss.eyeColor, goldMin = boss.rewardGold, goldMax = boss.rewardGold,
                 weaponDropChance = 0f, armorDropChance = 0f, itemDropChance = 1f,
@@ -85,7 +85,7 @@ namespace Hollowmark.Enemies
                 if (Player.Cam != null) Player.Cam.Shake(2.5f);
                 var flat = Player.transform.position - center; flat.y = 0f;
                 if (flat.magnitude < Boss.slamRadius)
-                    Player.Stats.TakeDamage(new DamageInfo { Amount = Boss.slamDamage, From = center, Source = gameObject });
+                    Player.Stats.TakeDamage(new DamageInfo { Amount = Boss.slamDamage, From = center, Source = gameObject, Poison = Boss.poison });
             }
             yield return new WaitForSeconds(0.4f);
             slamming = false;
