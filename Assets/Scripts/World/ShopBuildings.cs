@@ -576,28 +576,6 @@ namespace Hollowmark.World
         }
     }
 
-    /// <summary>Makes a light flicker like a fire or a candle.</summary>
-    public class Flicker : MonoBehaviour
-    {
-        public float Amount = 0.25f;
-        Light l;
-        float baseIntensity, seed;
-
-        void Start()
-        {
-            l = GetComponent<Light>();
-            if (l != null) baseIntensity = l.intensity;
-            seed = Random.value * 100f;
-        }
-
-        void Update()
-        {
-            if (l == null) return;
-            float n = Mathf.PerlinNoise(seed, Time.time * 6f) - 0.5f;
-            l.intensity = baseIntensity * (1f + n * 2f * Amount);
-        }
-    }
-
     /// <summary>Puffs of grey smoke drifting up from a chimney. Only a handful exist at once.</summary>
     public class ChimneySmoke : MonoBehaviour
     {

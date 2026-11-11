@@ -24,6 +24,7 @@ namespace Hollowmark.Player
             stats = GetComponent<PlayerStats>();
             Color skin;
             Rig = CharacterBuilder.BuildHuman(transform, 1.8f, 1700, out skin, false, 0.85f); // an adventurer's muscular build
+            CharacterRig.LookTarget = Rig.Head; // villagers and creatures turn their heads towards the hero
 
             // Smallclothes, always worn under everything else.
             underwear = Rig.Cover(new Color(0.96f, 0.95f, 0.9f), 0.005f, "Underwear", BodyRegion.Pelvis);
@@ -92,13 +93,19 @@ namespace Hollowmark.Player
                     break;
                 case ArmorSlot.Chest:
                     bool plate = def.id == "cuirass" || def.id == "forsaken_plate";
-                    list.AddRange(Rig.Cover(c, plate ? 0.02f : 0.012f, "ChestArmor", BodyRegion.Chest));
+                    string chestName = def.id == "brute_hide" ? "HideArmor" : def.id == "chain_shirt" ? "ChainArmor" : "ChestArmor";
+                    list.AddRange(Rig.Cover(c, plate ? 0.02f : 0.012f, chestName, BodyRegion.Chest));
                     if (!plate) list.AddRange(Rig.Cover(c, 0.01f, "Sleeve", BodyRegion.UpperArm, BodyRegion.Forearm));
                     if (def.id.EndsWith("_coat"))
+                    {
                         list.Add(Prim.Shape(BodyMesh.Get("CoatTail"), Rig.Torso, Vector3.zero, Rig.TrunkScale * 1.05f, c, "CoatTail"));
+                        list.AddRange(Gear.Buttons(Rig, new Color(0.78f, 0.62f, 0.3f), 7, 0f, 0.012f));
+                        list.AddRange(Gear.Cuffs(Rig, c * 0.8f));
+                    }
+                    if (plate) list.AddRange(Gear.Belt(Rig, new Color(0.2f, 0.13f, 0.08f), 0.57f));
                     break;
                 case ArmorSlot.Hands:
-                    list.AddRange(Rig.Cover(c, 0.007f, "Glove", BodyRegion.Hand));
+                    list.AddRange(Rig.Cover(c, 0.007f, def.id.Contains("gauntlet") ? "Gauntlet" : "Glove", BodyRegion.Hand));
                     break;
                 case ArmorSlot.Legs:
                     var shoes = new Color(0.1f, 0.08f, 0.06f);
@@ -107,6 +114,8 @@ namespace Hollowmark.Player
                         list.AddRange(Rig.Cover(c, 0.009f, "Breeches", BodyRegion.Pelvis, BodyRegion.Thigh));
                         list.AddRange(Rig.Cover(new Color(0.9f, 0.88f, 0.84f), 0.005f, "Stockings", BodyRegion.Shin));
                         list.AddRange(Rig.Cover(shoes, 0.007f, "Shoes", BodyRegion.Foot));
+                        list.AddRange(Gear.Belt(Rig, new Color(0.22f, 0.14f, 0.09f)));
+                        list.AddRange(Gear.ShoeBuckles(Rig, new Color(0.78f, 0.62f, 0.3f)));
                     }
                     else if (def.id == "jackboots")
                     {
@@ -115,7 +124,7 @@ namespace Hollowmark.Player
                     }
                     else
                     {
-                        list.AddRange(Rig.Cover(c, 0.018f, "LegArmor", BodyRegion.Pelvis, BodyRegion.Thigh, BodyRegion.Shin));
+                        list.AddRange(Rig.Cover(c, 0.018f, def.id.Contains("carapace") ? "CarapaceLegs" : "LegArmor", BodyRegion.Pelvis, BodyRegion.Thigh, BodyRegion.Shin));
                         list.AddRange(Rig.Cover(shoes, 0.008f, "Shoes", BodyRegion.Foot));
                     }
                     break;
