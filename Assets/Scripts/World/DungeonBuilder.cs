@@ -23,6 +23,7 @@ namespace Hollowmark.World
             var cells = Layout(def.roomCount);
             float spacing = def.roomSize * 1.4f + CorridorLength;
             int last = cells.Count - 1;
+            var ordinaryRooms = new List<KeyValuePair<Transform, float>>(); // where Mofven the owl may be perched
 
             for (int i = 0; i < cells.Count; i++)
             {
@@ -57,8 +58,13 @@ namespace Hollowmark.World
                     }
                 }
                 else if (camp) Camp(room, def);
-                else Populate(def, room, size, i, last);
+                else
+                {
+                    Populate(def, room, size, i, last);
+                    ordinaryRooms.Add(new KeyValuePair<Transform, float>(room, size));
+                }
             }
+            Pets.Mofven.MaybeSpawnWild(ordinaryRooms);
 
             // Face the first corridor.
             var dir = cells.Count > 1 ? cells[1] - cells[0] : new Vector2Int(0, 1);

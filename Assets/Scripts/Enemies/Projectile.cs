@@ -38,6 +38,8 @@ namespace Hollowmark.Enemies
             {
                 var hero = hit.collider.GetComponentInParent<Hero>();
                 if (hero != null) hero.Stats.TakeDamage(new DamageInfo { Amount = damage, From = transform.position, Source = owner });
+                var olmar = hit.collider.GetComponentInParent<Family.Olmar>();
+                if (olmar != null) olmar.Hurt(damage, transform.position); // he gets in the way of embers too
                 Effects.Puff(hit.point, new Color(1f, 0.6f, 0.2f), 0.5f, 0.3f);
                 Destroy(gameObject);
                 return;

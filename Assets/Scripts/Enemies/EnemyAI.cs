@@ -32,6 +32,7 @@ namespace Hollowmark.Enemies
         float stunUntil;
         float dazedUntil;   // stunned by an ability (Battle Cry, Smoke and Thunder)
         bool ambushReady;
+        Family.Olmar foe; // set while this creature goes for Olmar instead of the hero
 
         /// <summary>Every creature currently in the world.</summary>
         public static readonly System.Collections.Generic.List<EnemyAI> All = new System.Collections.Generic.List<EnemyAI>();
@@ -127,7 +128,7 @@ namespace Hollowmark.Enemies
             var hero = Player;
             if (hero == null || hero.Stats.Dead) { Rig.MoveSpeed = 0f; ApplyGravity(Vector3.zero); return; }
 
-            Vector3 to = hero.transform.position - transform.position;
+            Vector3 to = TargetPosition(hero) - transform.position;
             to.y = 0f;
             float dist = to.magnitude;
             stamina = Mathf.Min(Def.stamina, stamina + Time.deltaTime * 8f);
@@ -179,6 +180,21 @@ namespace Hollowmark.Enemies
                     if (Time.time > recoverUntil) Current = State.Chase;
                     break;
             }
+        }
+
+        /// <summary>
+        /// Melee creatures go for Olmar when he fights beside the hero and is clearly the closer one.
+        /// Ranged creatures and bosses keep their eyes on the hero.
+        /// </summary>
+        Vector3 TargetPosition(Hero hero)
+        {
+            var o = Family.Olmar.Active;
+            foe = null;
+            if (o == null || Def.ranged || this is BossAI || !o.CanBeTargeted || Current == State.Hidden) return hero.transform.position;
+            float toOlmar = Vector3.Distance(o.transform.position, transform.position);
+            float toHero = Vector3.Distance(hero.transform.position, transform.position);
+            if (toOlmar < toHero * 0.75f && toOlmar < Def.sightRange) { foe = o; return o.transform.position; }
+            return hero.transform.position;
         }
 
         protected virtual float SpeedMultiplier()
@@ -239,6 +255,12 @@ namespace Hollowmark.Enemies
                 {
                     var origin = transform.position + Vector3.up * Def.height * 0.8f + transform.forward * 0.4f;
                     Projectile.Launch(origin, hero.transform.position + Vector3.up * 1.2f, Def.projectileSpeed, dmg, gameObject);
+                }
+                else if (foe != null)
+                {
+                    var to = foe.transform.position - transform.position; to.y = 0f;
+                    if (to.magnitude <= Def.attackRange + 0.4f && Vector3.Angle(transform.forward, to) < 70f)
+                        foe.Hurt(dmg, transform.position);
                 }
                 else
                 {

@@ -46,6 +46,21 @@ to raise Swordsmanship) and light and heavy weights (hold E to raise Strength an
 weaponsmith, an armorer (who also repairs armor) and a provisioner selling food, water, medicine and ammunition.
 A well for free water. Villagers, and six dungeon gates. A gate unlocks when the boss of the previous dungeon is dead.
 
+**Village children and Olmar.** Five children play tag on the green by the well, chat when you press E, and run
+indoors at night or when the village is raided. Beside the church sits **Olmar**, a 13-year-old boy whose parents were
+taken by the creatures in the dungeons. Talk to him to hear his story and adopt him. He then lives in your house (his
+cot is next to your bed) and practises with his father's wooden sword on his own dummy beside the training yard.
+Talk to him to:
+- *Teach him at the dummy* (1 hour, twice a day, daylight only). He learns faster when your own Swordsmanship and
+  Strength are higher.
+- *Talk with him* once a day. It cheers him up and raises his Smarts.
+
+He grows a year older every 4 game days. At 16 he gets a real sword and you choose: **take him into the dungeons**,
+where he follows you and fights, or **leave him home**, where he fights off village raids. Strength gives him damage
+and health, Swordplay makes him swing faster and miss less, and Smarts lets him spot hidden creatures (and drag them
+out at level 5), step back when badly hurt (level 3), protect you first and dodge blows. Creatures may go for him
+instead of you. If he is beaten he goes home to rest for 8 hours. Tune all of this in `Resources/Data/family.json`.
+
 **Dungeons.** Six dungeons, each with its own look, temperature and changing weather:
 
 | Dungeon | Tier | Weather | Enemies | Boss |
@@ -114,6 +129,14 @@ village it is raided. Killing a boss lowers threat a lot.
 - *Quests*: Granny Hobb (cooking), Abel the Joiner (building), Sergeant Pike (dungeon trophies such as Gnarling ears)
   and Mistress Thorne (poison cures) give short quest chains. A yellow ! means a new task, a green ? means it's ready to
   hand in. Rewards are gold, items, recipes and blueprints. Active quests show in the top-right corner.
+
+**Mofven the owl.** On each dungeon visit there is a 20% chance that a lone, hungry eagle-owl is perched on a broken
+pillar in one of the rooms (you hear him hooting when you arrive). Feed him meat with E (Raw Mutton from Goody Pell's
+larder, Salted Pork, or small game) and he becomes your pet, Mofven, for the rest of the run. He flies after you
+everywhere, lands at your side when you stand still, and swivels his head the way owls do. He feeds himself by hunting.
+When your pack has no food left, he hunts for you too: he eats his share first and brings you what a grown owl can
+carry, such as a field vole, a wood mouse, a cave rat in the dungeons, or now and then a young rabbit (press Q to eat).
+Hunts take about half a minute and sometimes fail. The chance and timings are constants at the top of `Pets/Mofven.cs`.
 
 ## Levels, skills and abilities (RPG system)
 
@@ -234,6 +257,7 @@ Assets/Scripts
   World/     VillageBuilder, ShopBuildings (forge, armoury, provisions shop), DungeonBuilder, WeatherSystem,
              Interactables (bed, tent, campfire, shop, dummy, weights, gates, portals, crates), Loot,
              VillageRaid (villagers, raids)
+  Pets/      Mofven (the owl: dungeon spawn, taming, following, hunting)
   UI/        Hud (IMGUI: bars, shop, inventory, death, effects)
   Visuals/   Prim (primitives/materials), HumanMesh (realistic skinned bodies), BodyMesh (fallback bodies), CharacterRig (rig, faces, clothes, animation), Effects,
              ItemIcons + IconCanvas (painted pictures of every weapon, armor piece and supply)
