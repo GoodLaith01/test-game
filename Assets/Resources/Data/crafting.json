@@ -1,0 +1,45 @@
+{
+  "peddlerMarkup": 6,
+  "peddlerName": "Master Crowe",
+  "larderName": "Goody Pell",
+
+  "buffs": [
+    { "id": "hearty", "name": "Hearty", "description": "Healing over time", "seconds": 180, "healthPerSecond": 0.8, "color": "#FF7060" },
+    { "id": "second_wind", "name": "Second Wind", "description": "Stamina comes back much faster", "seconds": 180, "staminaRegenMultiplier": 1.6, "color": "#70E070" },
+    { "id": "poison_ward", "name": "Poison Ward", "description": "Poison barely affects you", "seconds": 300, "poisonResist": 0.75, "curesPoison": true, "color": "#C0E060" },
+    { "id": "theriac", "name": "Theriac", "description": "Poison cured, strong poison protection", "seconds": 240, "poisonResist": 0.9, "curesPoison": true, "healthPerSecond": 0.3, "color": "#40D090" },
+    { "id": "battle_fury", "name": "Battle Fury", "description": "+25% weapon damage", "seconds": 150, "damageMultiplier": 1.25, "color": "#FF9030" },
+    { "id": "iron_skin", "name": "Iron Skin", "description": "Take 25% less damage", "seconds": 180, "damageTakenMultiplier": 0.75, "color": "#B0B8C8" },
+    { "id": "sharpened", "name": "Sharpened Blade", "description": "+15% weapon damage", "seconds": 300, "damageMultiplier": 1.15, "color": "#E0E0FF" },
+    { "id": "bathed", "name": "Hot Bath", "description": "Healing, faster stamina, calmer mind", "seconds": 240, "healthPerSecond": 0.5, "staminaRegenMultiplier": 1.3, "sanityPerSecond": 0.08, "color": "#80C0FF" }
+  ],
+
+  "recipes": [
+    { "id": "r_hunters_stew", "result": "hunters_stew", "ingredients": [ { "id": "raw_meat", "count": 1 }, { "id": "onion", "count": 1 }, { "id": "salt", "count": 1 } ], "minutes": 40, "known": true, "price": 0 },
+    { "id": "r_honey_cakes", "result": "honey_cakes", "resultCount": 2, "ingredients": [ { "id": "flour", "count": 1 }, { "id": "honey", "count": 1 }, { "id": "milk", "count": 1 } ], "minutes": 30, "known": true, "price": 0 },
+    { "id": "r_garlic_broth", "result": "garlic_broth", "ingredients": [ { "id": "garlic", "count": 2 }, { "id": "onion", "count": 1 }, { "id": "wild_herbs", "count": 1 } ], "minutes": 30, "price": 260 },
+    { "id": "r_venom_theriac", "result": "venom_theriac", "ingredients": [ { "id": "crawler_venom", "count": 1 }, { "id": "honey", "count": 1 }, { "id": "wild_herbs", "count": 2 } ], "minutes": 60, "station": "apothecary_still", "price": 420 },
+    { "id": "r_ember_pie", "result": "ember_pie", "ingredients": [ { "id": "flour", "count": 2 }, { "id": "raw_meat", "count": 1 }, { "id": "imp_ember", "count": 1 } ], "minutes": 50, "station": "stone_oven", "price": 480 },
+    { "id": "r_marrow_soup", "result": "marrow_soup", "ingredients": [ { "id": "brute_tusk", "count": 1 }, { "id": "onion", "count": 1 }, { "id": "salt", "count": 1 }, { "id": "wild_herbs", "count": 1 } ], "minutes": 60, "station": "stone_oven", "price": 520 }
+  ],
+
+  "blueprints": [
+    { "id": "herb_garden", "name": "Herb Garden", "description": "Raised beds behind your house. Gives herbs, garlic and onions every morning.",
+      "materials": [ { "id": "timber", "count": 3 }, { "id": "rope", "count": 1 } ], "gold": 15, "buildHours": 2, "known": true, "price": 0,
+      "dailyItems": [ { "id": "wild_herbs", "count": 2 }, { "id": "garlic", "count": 1 }, { "id": "onion", "count": 1 } ] },
+    { "id": "stone_oven", "name": "Stone Bread Oven", "description": "Bakes pies and slow soups. Needed for oven recipes.",
+      "materials": [ { "id": "stone_block", "count": 6 }, { "id": "timber", "count": 2 } ], "gold": 40, "buildHours": 4, "known": true, "price": 0 },
+    { "id": "apothecary_still", "name": "Apothecary's Still", "description": "Brews antidotes. Its fumes also harden you against poison (-20% poison, always).",
+      "materials": [ { "id": "iron_nails", "count": 3 }, { "id": "stone_block", "count": 2 }, { "id": "crawler_venom", "count": 1 } ], "gold": 60, "buildHours": 3, "price": 650,
+      "poisonResist": 0.2 },
+    { "id": "grinding_wheel", "name": "Grinding Wheel", "description": "Sharpen your weapon before a descent (+15% damage for 5 minutes, once every 6 hours).",
+      "materials": [ { "id": "stone_block", "count": 3 }, { "id": "timber", "count": 2 }, { "id": "iron_nails", "count": 2 } ], "gold": 50, "buildHours": 3, "price": 600,
+      "useBuff": "sharpened", "cooldownHours": 6, "useText": "You put a fine edge on your weapon." },
+    { "id": "smokehouse", "name": "Smokehouse", "description": "Cures meat. Gives mutton every morning, and good food keeps you sturdier (+10 max health).",
+      "materials": [ { "id": "timber", "count": 6 }, { "id": "iron_nails", "count": 2 }, { "id": "salt", "count": 4 } ], "gold": 70, "buildHours": 5, "price": 700,
+      "maxHealth": 10, "dailyItems": [ { "id": "raw_meat", "count": 2 }, { "id": "salt", "count": 1 } ] },
+    { "id": "bathhouse", "name": "Bathhouse", "description": "A hot bath heals, restores stamina and calms the mind (once every 8 hours). +15 max stamina, always.",
+      "materials": [ { "id": "timber", "count": 8 }, { "id": "stone_block", "count": 6 }, { "id": "iron_nails", "count": 4 } ], "gold": 150, "buildHours": 8, "price": 1400,
+      "maxStamina": 15, "useBuff": "bathed", "cooldownHours": 8, "useText": "You soak in the hot water until your fingers wrinkle." }
+  ]
+}

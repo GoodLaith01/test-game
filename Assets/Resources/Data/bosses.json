@@ -11,7 +11,7 @@
     { "id": "abbess_of_mire", "name": "The Drowned Abbess", "title": "Saint of the Sunken Marsh", "description": "Tall and thin, her robes heavy with bog water.",
       "bodyShape": "Giant", "height": 3.4, "width": 1.1, "health": 760, "damage": 24, "attackTime": 1.3, "attackRange": 3.6, "moveSpeed": 3.4,
       "slamRadius": 6, "slamDamage": 30, "slamCooldown": 7, "summonEnemyId": "bog_crawler", "summonCount": 3, "enrageThreshold": 0.4,
-      "color": "#3A4A40", "eyeColor": "#60FFB0", "weaponName": "drowned censer", "rewardGold": 260, "guaranteedWeapon": "brown_bess", "guaranteedArmor": "chain_shirt", "threatReduction": 60 },
+      "color": "#3A4A40", "eyeColor": "#60FFB0", "weaponName": "drowned censer", "rewardGold": 260, "guaranteedWeapon": "brown_bess", "guaranteedArmor": "chain_shirt", "threatReduction": 60, "poison": 30 },
     { "id": "forge_tyrant", "name": "The Forge Tyrant", "title": "Bellows-Heart of the Ember Foundry", "description": "An imp-king grown huge in the furnace heat.",
       "bodyShape": "Giant", "height": 3.6, "width": 1.8, "health": 900, "damage": 30, "attackTime": 1.6, "attackRange": 3.5, "moveSpeed": 3.2,
       "slamRadius": 6, "slamDamage": 40, "slamCooldown": 8, "summonEnemyId": "ashen_imp", "summonCount": 3, "enrageThreshold": 0.35,
