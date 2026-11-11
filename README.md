@@ -142,6 +142,21 @@ uses it instead of the generated body (see `CharacterBuilder.TryModel`). If the 
 float, `Attack` and `Hurt` triggers and a `Dead` bool (for example a Mixamo character), the game drives them. The five creature types should each get their
 own sculpted model with several head and body variants to keep the "no two alike" feel.
 
+## Graphics
+
+- **Textured surfaces.** Every object gets a tileable, bump-mapped texture that fits what it is (grass, cobbles,
+  flagstones, brick, wood, thatch, plaster, linen, wool, leather, metal, skin, scales...). The textures are in
+  `Assets/Resources/Textures` and are made by `python3 Tools/make_textures.py`. Builders pick a surface from an
+  object's name and colour (`Surfaces.Guess`), so new buildings are textured automatically.
+- **Light and sky.** A procedural sky with golden sunrise and sunset, three-colour ambient light, longer and sharper
+  shadows, flickering torches and lamps with living flames, and a moonlit blue night.
+- **Post-processing.** Bloom, a filmic tone curve, a warm period colour grade and a vignette. Built-in pipeline:
+  `Assets/Resources/Shaders/PostFx.shader`. URP: a global Volume is created at runtime.
+- **Scenery.** A forest, hills, rocks and grass around the village; puddles, bones and chains in the dungeons.
+- **Characters.** Period clothing details (buttons, neckcloths, cuffs, buckled shoes, aprons, caps, open coats,
+  tricornes), creature claws, spines and scaly hides, a crown or helm, cape, armour and signature weapon for
+  each boss, detailed 1700s weapons, and heads that turn to look at the hero.
+
 ## Code map
 
 ```
