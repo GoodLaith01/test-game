@@ -48,7 +48,7 @@ namespace Hollowmark.Player
             else
             {
                 Aiming = GameInput.MouseHeld(1);
-                if (GameInput.KeyDown(KeyCode.R)) StartCoroutine(Reload(w));
+                if (GameInput.KeyDown(KeyCode.R) && !Reloading) StartCoroutine(Reload(w));
                 if (GameInput.MouseDown(0)) TryFire(w);
             }
         }
@@ -89,7 +89,7 @@ namespace Hollowmark.Player
         IEnumerator Strike(WeaponDef w, float windup)
         {
             yield return new WaitForSeconds(windup);
-            if (hero.Stats.Dead) yield break;
+            if (hero.Stats.Dead || hero.Stats.Rolling || Current != w) yield break;
             var s = hero.Stats;
             // A sleepless mind fumbles.
             if (Random.value < s.MindPenalty * 0.45f)
@@ -124,7 +124,7 @@ namespace Hollowmark.Player
             float t = 0f;
             while (t < duration)
             {
-                if (hero.Stats.Dead || inv.Equipped != w) { Reloading = false; ReloadProgress = 0f; yield break; }
+                if (hero.Stats.Dead || inv.Equipped != w || inv.Count(AmmoId) < Mathf.Max(1, w.ammoPerShot)) { Reloading = false; ReloadProgress = 0f; yield break; }
                 t += Time.deltaTime;
                 ReloadProgress = t / duration;
                 yield return null;
@@ -151,7 +151,9 @@ namespace Hollowmark.Player
             // Aim at whatever is under the crosshair.
             Vector3 aimPoint = cam.position + cam.forward * w.range;
             RaycastHit hit;
-            if (Physics.Raycast(cam.position + cam.forward * 2f, cam.forward, out hit, w.range, ~0, QueryTriggerInteraction.Ignore)) aimPoint = hit.point;
+            if (Layers.RaycastSolid(cam.position, cam.forward, w.range + 8f, transform, out hit)) aimPoint = hit.point;
+            // Never aim behind the muzzle (e.g. when the camera is pressed against a wall).
+            if (Vector3.Dot(aimPoint - muzzle, transform.forward) < 0.5f) aimPoint = muzzle + cam.forward * w.range;
 
             float spread = w.spread * (Aiming ? 0.5f : 1f) + hero.Stats.MindPenalty * 12f;
             for (int i = 0; i < Mathf.Max(1, w.pellets); i++)
@@ -159,11 +161,11 @@ namespace Hollowmark.Player
                 var dir = (aimPoint - muzzle).normalized;
                 dir = Quaternion.Euler(Random.Range(-spread, spread), Random.Range(-spread, spread), 0f) * dir;
                 Vector3 end = muzzle + dir * w.range;
-                if (Physics.Raycast(muzzle, dir, out hit, w.range, ~0, QueryTriggerInteraction.Collide))
+                if (Layers.RaycastSolid(muzzle, dir, w.range, transform, out hit))
                 {
                     end = hit.point;
                     var target = hit.collider.GetComponentInParent<IDamageable>();
-                    if (target != null && !hit.collider.transform.IsChildOf(transform))
+                    if (target != null && target.IsAlive)
                         target.TakeDamage(new DamageInfo { Amount = DamageFor(w), From = transform.position, Source = gameObject, IsPlayer = true });
                 }
                 Effects.Tracer(muzzle, end);

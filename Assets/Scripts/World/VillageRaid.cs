@@ -36,6 +36,8 @@ namespace Hollowmark.World
             return v;
         }
 
+        float blockedFor;
+
         void Update()
         {
             var to = target - transform.localPosition; to.y = 0f;
@@ -50,8 +52,19 @@ namespace Hollowmark.World
                 }
                 return;
             }
+            // Villagers have no physics body, so look ahead and turn back instead of walking through walls.
+            var dir = to.normalized;
+            if (Physics.SphereCast(transform.position + Vector3.up * 0.9f, 0.3f, dir, out var hit, 0.6f, ~0, QueryTriggerInteraction.Ignore)
+                && !(hit.collider is CharacterController))
+            {
+                blockedFor += Time.deltaTime;
+                Rig.MoveSpeed = 0f;
+                if (blockedFor > 0.3f) { blockedFor = 0f; target = transform.localPosition - dir * 2f; wait = Random.Range(1f, 3f); }
+                return;
+            }
+            blockedFor = 0f;
             transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.LookRotation(to), Time.deltaTime * 5f);
-            transform.localPosition += to.normalized * 1.2f * Time.deltaTime;
+            transform.localPosition += dir * 1.2f * Time.deltaTime;
             Rig.MoveSpeed = 1.2f;
         }
     }
@@ -84,14 +97,14 @@ namespace Hollowmark.World
             for (int i = 0; i < count; i++)
             {
                 var def = pool[Random.Range(0, pool.Count)];
-                var pos = new Vector3(Random.Range(-20f, 20f), 0.5f, Random.Range(28f, 38f));
-                var e = EnemyAI.Spawn(def, pos, tier, transform);
+                var pos = Layers.ClearSpot(new Vector3(0f, 0f, 33f), new Vector2(20f, 5f), Mathf.Max(0.3f, def.width * 0.5f), def.height);
+                var e = EnemyAI.Spawn(def, pos + Vector3.up * 0.3f, tier, transform);
                 e.Reveal();
                 raiders.Add(e);
             }
 
             // Someone gives up.
-            var villagers = transform.parent.GetComponentsInChildren<Villager>();
+            var villagers = transform.parent != null ? transform.parent.GetComponentsInChildren<Villager>() : new Villager[0];
             var hollowDef = GameDatabase.Enemy("hollowed");
             if (villagers.Length > 0 && hollowDef != null)
             {
@@ -109,12 +122,18 @@ namespace Hollowmark.World
 
         void Update()
         {
+            if (GameManager.Instance == null || GameManager.Instance.Raid != this) { Destroy(gameObject); return; }
             raiders.RemoveAll(r => r == null || !r.IsAlive);
             if (raiders.Count == 0 && Time.time - startedAt > 1f)
             {
                 GameManager.Instance.Threat = GameDatabase.Balance.threatAfterRaid;
                 Hud.Instance.Banner("The raid is over", "Hollowmark stands, for now. Strike at the bosses to keep it safe.");
-                if (Hero.Instance != null) { Hero.Instance.Stats.Inventory.Gold += 50; Hero.Instance.Say("The grateful villagers give you 50 gold."); }
+                if (Hero.Instance != null)
+                {
+                    Hero.Instance.Stats.Inventory.Gold += 50;
+                    Hero.Instance.Stats.Inventory.NotifyChanged();
+                    Hero.Instance.Say("The grateful villagers give you 50 gold.");
+                }
                 GameManager.Instance.Raid = null;
                 Destroy(gameObject);
             }

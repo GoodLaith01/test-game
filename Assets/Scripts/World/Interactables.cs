@@ -23,6 +23,7 @@ namespace Hollowmark.World
         public override string Prompt(Hero hero) { return "Sleep until morning (restores stamina, calms the mind)"; }
         public override void Interact(Hero hero)
         {
+            if (GameManager.Instance.Raid != null) { hero.Say("You can't sleep while the village is under attack!"); return; }
             // Sleep until 7 in the morning, or a full 8 hours if it is already close to morning.
             float hours = GameManager.Instance.HoursUntil(7f);
             if (hours < 6f) hours = 8f;
@@ -166,7 +167,10 @@ namespace Hollowmark.World
         {
             var gm = GameManager.Instance;
             if (!gm.IsUnlocked(Dungeon))
-                return Dungeon.name + " (sealed: defeat the boss of " + GameDatabase.Dungeon(Dungeon.unlockAfter).name + " first)";
+            {
+                var before = GameDatabase.Dungeon(Dungeon.unlockAfter);
+                return Dungeon.name + " (sealed: defeat the boss of " + (before != null ? before.name : Dungeon.unlockAfter) + " first)";
+            }
             return "Enter " + Dungeon.name + (gm.BossDefeated(Dungeon) ? " (boss defeated)" : "") + "  [tier " + Dungeon.tier + "]";
         }
 
@@ -181,7 +185,7 @@ namespace Hollowmark.World
     public class ExitPortal : Interactable
     {
         public override string Prompt(Hero hero) { return "Return to the village"; }
-        public override void Interact(Hero hero) { GameManager.Instance.EnterVillage(); }
+        public override void Interact(Hero hero) { if (!GameManager.Instance.InVillage) GameManager.Instance.EnterVillage(); }
     }
 
     /// <summary>A one-time cache of food, water and medicine found in a dungeon.</summary>
@@ -193,6 +197,7 @@ namespace Hollowmark.World
         public override string Prompt(Hero hero) { return "Search the supply crate"; }
         public override void Interact(Hero hero)
         {
+            if (opened) return;
             opened = true;
             int count = Random.Range(2, 4);
             for (int i = 0; i < count && Items != null && Items.Length > 0; i++)

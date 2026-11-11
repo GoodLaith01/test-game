@@ -49,11 +49,17 @@ namespace Hollowmark.UI
             if (messages.Count > 7) messages.RemoveAt(0);
         }
 
+        public static void ClearMessages() { messages.Clear(); }
+
         public void Banner(string t, string sub) { bannerTitle = t; bannerSub = sub; bannerUntil = Time.time + 5f; }
         public void Fade(string text) { fadeText = text; fadeUntil = Time.time + 2.5f; }
         public void ShowIntro() { screen = Screen.Intro; }
         public void ShowDeath(string cause) { deathCause = cause; screen = Screen.Death; }
-        public void OpenShop(ShopStall s) { shop = s; shopSelling = false; screen = Screen.Shop; }
+        public void OpenShop(ShopStall s)
+        {
+            if (s == null || screen == Screen.Death) return;
+            shop = s; shopSelling = false; scrollA = Vector2.zero; screen = Screen.Shop;
+        }
 
         Hero H { get { return Hero.Instance; } }
 
@@ -61,11 +67,18 @@ namespace Hollowmark.UI
         {
             if (H == null) return;
             if (pending != null) { var p = pending; pending = null; p(); }
-            if (GameInput.KeyDown(KeyCode.Tab) || GameInput.KeyDown(KeyCode.I))
-                screen = screen == Screen.Inventory ? Screen.None : (screen == Screen.None ? Screen.Inventory : screen);
-            if (GameInput.KeyDown(KeyCode.F1)) screen = screen == Screen.Help ? Screen.None : Screen.Help;
-            if (GameInput.KeyDown(KeyCode.Escape) && screen != Screen.Death)
-                screen = screen == Screen.None ? Screen.Help : Screen.None;
+            // The death screen can't be closed by any key: the only way out is the respawn button.
+            if (H.Stats.Dead) screen = Screen.Death;
+            else if (screen == Screen.Death) screen = Screen.None;
+            if (screen == Screen.Shop && shop == null) screen = Screen.None; // the stall's world was unloaded
+            if (screen != Screen.Death)
+            {
+                if (GameInput.KeyDown(KeyCode.Tab) || GameInput.KeyDown(KeyCode.I))
+                    screen = screen == Screen.Inventory ? Screen.None : (screen == Screen.None ? Screen.Inventory : screen);
+                if (GameInput.KeyDown(KeyCode.F1)) screen = screen == Screen.Help ? Screen.None : Screen.Help;
+                if (GameInput.KeyDown(KeyCode.Escape))
+                    screen = screen == Screen.None ? Screen.Help : Screen.None;
+            }
 
             bool menu = screen != Screen.None;
             H.InputLocked = menu;
@@ -75,7 +88,7 @@ namespace Hollowmark.UI
             Cursor.visible = menu;
 
             // Quick-use keys.
-            if (!menu)
+            if (!menu && !H.Stats.Dead)
             {
                 var inv = H.Stats.Inventory;
                 if (GameInput.KeyDown(KeyCode.Q)) Quick(inv.BestOf(ItemKind.Food, i => i.hunger - Mathf.Max(0f, i.insanity) * 3f), "No food! Buy some at the market or search crates.");
@@ -312,10 +325,7 @@ namespace Hollowmark.UI
             GUI.Label(new Rect(r.x + 20, r.y + 70, r.width - 40, 60), "Killed by " + deathCause + "." +
                 (H.Stats.Inventory.InUnderwear ? "\nIn your underwear, no less." : ""), centered);
             if (GUI.Button(new Rect(r.x + r.width / 2 - 120, r.yMax - 70, 240, 44), "Wake in the village", button))
-            {
-                screen = Screen.None;
-                GameManager.Instance.Respawn();
-            }
+                Later(() => { GameManager.Instance.Respawn(); screen = Screen.None; });
         }
 
         void InventoryScreen(float w, float h)
@@ -361,7 +371,7 @@ namespace Hollowmark.UI
             foreach (var a in inv.Armor.ToList())
             {
                 GUILayout.Label(string.Format("{0} ({1}) def {2}, warmth {3:0%}, {4:0%}", a.Def.name, a.Def.slot, a.Def.defense, a.Def.insulation, a.Condition), small);
-                if (GUILayout.Button("Wear", button, GUILayout.Width(90))) Later(() => inv.Wear(a));
+                if (GUILayout.Button("Wear", button, GUILayout.Width(90))) Later(() => { if (inv.Armor.Contains(a)) inv.Wear(a); });
             }
             GUILayout.EndScrollView();
             GUILayout.EndArea();
@@ -376,7 +386,7 @@ namespace Hollowmark.UI
                 if (def == null) continue;
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(def.name + " x" + kv.Value, small);
-                if (def.Kind != ItemKind.Ammo && GUILayout.Button("Use", button, GUILayout.Width(60))) Later(() => s.Consume(def));
+                if (def.Kind != ItemKind.Ammo && GUILayout.Button("Use", button, GUILayout.Width(60))) Later(() => { if (!s.Dead) s.Consume(def); });
                 GUILayout.EndHorizontal();
             }
             GUILayout.Space(10);
@@ -389,6 +399,7 @@ namespace Hollowmark.UI
 
         void ShopScreen(float w, float h)
         {
+            if (shop == null) return;
             var r = Panel(w, h, Mathf.Min(820, w - 40), Mathf.Min(600, h - 40), shop.Keeper);
             var inv = H.Stats.Inventory;
             GUILayout.BeginArea(new Rect(r.x + 20, r.y + 55, r.width - 40, r.height - 75));
@@ -450,7 +461,7 @@ namespace Hollowmark.UI
             GUILayout.Label(text, small);
             GUI.enabled = inv.Gold >= price;
             if (GUILayout.Button("Buy " + price, button, GUILayout.Width(100)))
-                Later(() => { inv.Gold -= price; buy(); inv.NotifyChanged(); });
+                Later(() => { if (inv.Gold < price) return; inv.Gold -= price; buy(); inv.NotifyChanged(); });
             GUI.enabled = true;
             GUILayout.EndHorizontal();
         }
@@ -464,7 +475,12 @@ namespace Hollowmark.UI
                 int price = Mathf.Max(1, wpn.price * 2 / 5);
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(wpn.name, small);
-                if (GUILayout.Button("Sell " + price, button, GUILayout.Width(100))) Later(() => { inv.Weapons.Remove(wpn); inv.Gold += price; inv.NotifyChanged(); });
+                if (GUILayout.Button("Sell " + price, button, GUILayout.Width(100))) Later(() =>
+                {
+                    // Re-check when the click is applied: never sell the last copy of the weapon in your hand.
+                    if (wpn == inv.Equipped && inv.Weapons.Count(x => x == wpn) <= 1) return;
+                    if (inv.Weapons.Remove(wpn)) { inv.Gold += price; inv.NotifyChanged(); }
+                });
                 GUILayout.EndHorizontal();
             }
             foreach (var a in inv.Armor.ToList())
@@ -472,7 +488,7 @@ namespace Hollowmark.UI
                 int price = Mathf.Max(1, Mathf.RoundToInt(a.Def.price * 0.4f * a.Condition));
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(string.Format("{0} ({1:0%})", a.Def.name, a.Condition), small);
-                if (GUILayout.Button("Sell " + price, button, GUILayout.Width(100))) Later(() => { inv.Armor.Remove(a); inv.Gold += price; inv.NotifyChanged(); });
+                if (GUILayout.Button("Sell " + price, button, GUILayout.Width(100))) Later(() => { if (inv.Armor.Remove(a)) { inv.Gold += price; inv.NotifyChanged(); } });
                 GUILayout.EndHorizontal();
             }
             foreach (var kv in inv.Items.ToList())
@@ -482,7 +498,7 @@ namespace Hollowmark.UI
                 int price = Mathf.Max(1, def.price / 2);
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(def.name + " x" + kv.Value, small);
-                if (GUILayout.Button("Sell 1 for " + price, button, GUILayout.Width(120))) Later(() => { inv.TakeItem(def.id); inv.Gold += price; });
+                if (GUILayout.Button("Sell 1 for " + price, button, GUILayout.Width(120))) Later(() => { if (inv.TakeItem(def.id)) { inv.Gold += price; inv.NotifyChanged(); } });
                 GUILayout.EndHorizontal();
             }
         }

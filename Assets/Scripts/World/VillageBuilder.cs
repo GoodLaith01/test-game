@@ -38,7 +38,8 @@ namespace Hollowmark.World
 
             for (int i = 0; i < 6; i++)
             {
-                var pos = new Vector3(Random.Range(-25f, 25f), 0f, Random.Range(-20f, 20f));
+                // Pick an open spot, so nobody starts inside a house or a market stall.
+                var pos = Layers.ClearSpot(new Vector3(0f, 0f, -4f), new Vector2(25f, 18f), 0.4f, 1.8f, 30);
                 Villager.Spawn(root, pos, 300 + i);
             }
 

@@ -78,11 +78,11 @@ namespace Hollowmark.Enemies
             Effects.Warning(center, Boss.slamRadius, 1.2f);
             Rig.PlayAttack(1.2f);
             yield return new WaitForSeconds(1.1f);
-            if (Current == State.Dead) yield break;
+            if (Current == State.Dead) { slamming = false; yield break; }
             Effects.Puff(center, new Color(0.4f, 0.35f, 0.3f), Boss.slamRadius, 0.6f);
             if (Player != null)
             {
-                Player.Cam.Shake(2.5f);
+                if (Player.Cam != null) Player.Cam.Shake(2.5f);
                 var flat = Player.transform.position - center; flat.y = 0f;
                 if (flat.magnitude < Boss.slamRadius)
                     Player.Stats.TakeDamage(new DamageInfo { Amount = Boss.slamDamage, From = center, Source = gameObject });
@@ -112,8 +112,10 @@ namespace Hollowmark.Enemies
             if (Player != null) Player.Say(Boss.name + " calls for help!");
             for (int i = 0; i < Boss.summonCount; i++)
             {
-                var offset = Quaternion.Euler(0f, i * 360f / Boss.summonCount, 0f) * Vector3.forward * 3f;
-                var e = Spawn(def, transform.position + offset + Vector3.up * 0.5f, 1, transform.parent);
+                var offset = Quaternion.Euler(0f, i * 360f / Boss.summonCount, 0f) * Vector3.forward * (Boss.width * 0.5f + 2.5f);
+                var spot = transform.position + offset;
+                if (!Layers.Fits(spot, def.width * 0.5f, def.height)) spot = Layers.ClearSpot(spot, new Vector2(2f, 2f), def.width * 0.5f, def.height);
+                var e = Spawn(def, spot + Vector3.up * 0.3f, 1, transform.parent);
                 e.Reveal();
             }
         }

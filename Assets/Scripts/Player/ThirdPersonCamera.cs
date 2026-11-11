@@ -11,8 +11,9 @@ namespace Hollowmark.Player
         public float Yaw { get; private set; }
         float pitch = 15f;
         float shake;
+        float currentDist = 4.5f;
 
-        public void SnapBehind(float yaw) { Yaw = yaw; pitch = 15f; }
+        public void SnapBehind(float yaw) { Yaw = yaw; pitch = 15f; currentDist = Distance; }
         public void Shake(float amount) { shake = Mathf.Max(shake, amount); }
 
         void LateUpdate()
@@ -40,10 +41,19 @@ namespace Hollowmark.Player
             // Pull in when a wall is between the hero and the camera.
             var dir = wanted - pivot;
             float dist = dir.magnitude;
-            RaycastHit hit;
-            if (Physics.SphereCast(pivot, 0.25f, dir.normalized, out hit, dist, ~0, QueryTriggerInteraction.Ignore)
-                && !hit.transform.IsChildOf(Target))
-                wanted = pivot + dir.normalized * Mathf.Max(0.5f, hit.distance - 0.1f);
+            // Only walls and props pull the camera in: creatures walking behind the hero don't make it jump.
+            float nearest = dist;
+            foreach (var hit in Physics.SphereCastAll(pivot, 0.25f, dir.normalized, dist, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.collider is CharacterController || hit.transform.IsChildOf(Target)) continue;
+                if (hit.distance <= 0f) continue; // started inside this collider
+                nearest = Mathf.Min(nearest, hit.distance);
+            }
+            if (nearest < dist) wanted = pivot + dir.normalized * Mathf.Max(0.5f, nearest - 0.1f);
+            // Smooth only when the view opens up again, so walls never clip through but there's no snapping.
+            float wantedDist = (wanted - pivot).magnitude;
+            currentDist = wantedDist < currentDist ? wantedDist : Mathf.MoveTowards(currentDist, wantedDist, Time.unscaledDeltaTime * 6f);
+            wanted = pivot + dir.normalized * currentDist;
 
             if (shake > 0f)
             {
