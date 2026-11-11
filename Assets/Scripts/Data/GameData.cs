@@ -9,7 +9,7 @@ namespace Hollowmark.Data
     public enum WeaponKind { Melee, Firearm }
     public enum WeightClass { Light, Medium, Heavy, Great }
     public enum ArmorSlot { Head, Chest, Hands, Legs }
-    public enum ItemKind { Food, Drink, Medicine, Ammo, Tonic }
+    public enum ItemKind { Food, Drink, Medicine, Ammo, Tonic, Ingredient, Material, Meal }
     public enum StealthKind { None, Shadow, Burrow }
     public enum BodyShape { Goblin, Humanoid, Crawler, Imp, Brute, Giant }
     public enum ParticleKind { None, Rain, Snow, Ash, Embers, Spores, Dust }
@@ -117,9 +117,14 @@ namespace Hollowmark.Data
         public bool sold = true;
         public float dropWeight = 1f;
         public string color = "#C8A060";
+        public string buff;      // optional buff id from crafting.json, applied when eaten
+        public string vendor;    // "larder" or "peddler": sold by those village merchants instead of Widow Marsh
 
         [NonSerialized] public ItemKind Kind;
         [NonSerialized] public Color Tint;
+
+        /// <summary>Raw ingredients, building materials and ammo can't be eaten or drunk.</summary>
+        public bool Usable { get { return Kind != ItemKind.Ammo && Kind != ItemKind.Ingredient && Kind != ItemKind.Material; } }
 
         public void Init()
         {
@@ -161,6 +166,7 @@ namespace Hollowmark.Data
         public string[] weaponDrops;         // empty = any weapon of the dungeon tier
         public string[] armorDrops;          // the armor this creature wears
         public string[] itemDrops;
+        public float poison;                 // poison added to the hero per hit
         public string model;
 
         [NonSerialized] public StealthKind Stealth;
@@ -201,6 +207,7 @@ namespace Hollowmark.Data
         public string guaranteedWeapon;
         public string guaranteedArmor;
         public float threatReduction = 50f;
+        public float poison;                 // poison added per hit and per slam
         public string model;
 
         [NonSerialized] public BodyShape Shape;

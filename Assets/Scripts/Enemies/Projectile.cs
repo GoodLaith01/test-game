@@ -23,11 +23,14 @@ namespace Hollowmark.Enemies
             p.velocity = (target - from).normalized * speed;
             p.damage = damage;
             p.owner = owner;
+            // Belongs to the current world, so it vanishes when the hero changes area.
+            if (GameManager.Instance != null && GameManager.Instance.WorldRoot != null) go.transform.SetParent(GameManager.Instance.WorldRoot, true);
         }
 
         void Update()
         {
             life -= Time.deltaTime;
+            if (life <= 0f) { Destroy(gameObject); return; }
             var step = velocity * Time.deltaTime;
             RaycastHit hit;
             if (Physics.SphereCast(transform.position, 0.12f, velocity.normalized, out hit, step.magnitude, ~0, QueryTriggerInteraction.Ignore)
@@ -40,7 +43,6 @@ namespace Hollowmark.Enemies
                 return;
             }
             transform.position += step;
-            if (life <= 0f) Destroy(gameObject);
         }
     }
 }

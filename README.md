@@ -99,6 +99,20 @@ village it is raided. Killing a boss lowers threat a lot.
 
 **Death.** You wake in the village and lose half your gold. You keep your gear.
 
+**Cooking, building and village quests.** Your homestead is west of your house.
+- *Cooking*: press E at the Cooking Hearth. Meals restore food and give a timed buff: Hunter's Stew heals over time,
+  Honey Cakes speed up stamina, Garlic Broth and Venom Theriac cure and ward off poison, Ember-Baked Pie adds damage,
+  Tusk Marrow Soup cuts the damage you take. Eat them from the inventory (Tab). Some recipes need a Stone Bread Oven
+  or an Apothecary's Still.
+- *Building*: each plot holds one building. Herb Garden and Smokehouse give goods every morning, the Grinding Wheel
+  sharpens your weapon, the Bathhouse heals and calms you, the Still gives permanent poison resistance.
+- *Poison*: Gnarlings, Bog Crawlers and the Drowned Abbess poison you. It drains health until it wears off or is cured.
+- *Markets*: Goody Pell (north-west of the well) sells ingredients, timber, stone, nails and rope. Master Crowe's wagon
+  (north-east) sells ready-made meals at 6x their value, plus recipes and blueprints for hundreds of gold.
+- *Quests*: Granny Hobb (cooking), Abel the Joiner (building), Sergeant Pike (dungeon trophies such as Gnarling ears)
+  and Mistress Thorne (poison cures) give short quest chains. A yellow ! means a new task, a green ? means it's ready to
+  hand in. Rewards are gold, items, recipes and blueprints. Active quests show in the top-right corner.
+
 ## Adding content (data-driven)
 
 Everything is in `Assets/Resources/Data/*.json`. Ids link entries together, and typos are reported as console warnings on load.
@@ -111,6 +125,12 @@ Everything is in `Assets/Resources/Data/*.json`. Ids link entries together, and 
 - **New dungeon**: add to `dungeons.json` with its colours, `enemies`, `bossId`, `weathers`, `supplyItems` and
   `unlockAfter`. A gate appears in the village automatically.
 - **New weather**: add to `weather.json` (temperature, fog, light, `particles`: `Rain`/`Snow`/`Ash`/`Embers`/`Spores`/`Dust`, wind, lightning).
+- **Cooking and building**: ingredients, materials, trophies and meals are in `crafting_items.json` (`kind`
+  `Ingredient`/`Material`/`Meal`, `buff`, and `vendor`: `larder` or `peddler`). Buffs, recipes and blueprints are in
+  `crafting.json`. A new blueprint gets the next free homestead plot (there are six).
+- **Quests**: add to `quests.json` with a `giver`, what to `deliver` or `build`, `after` (a quest that must come first)
+  and rewards (`rewardGold`, `rewardItems`, `rewardRecipes`, `rewardBlueprints`). The four givers are placed in
+  `HomesteadBuilder.cs`.
 - **Balance**: `balance.json` holds time speed, hunger and thirst rates, the insanity threshold, the underwear
   damage multiplier, threat speed and starting gear.
 

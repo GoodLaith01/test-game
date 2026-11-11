@@ -40,6 +40,7 @@ namespace Hollowmark.Data
                 foreach (var d in dungeons.items) { d.Init(); Dungeons.Add(d); }
             }
 
+            CraftingDatabase.Load(); // cooking, building and quests (crafting.json, crafting_items.json, quests.json)
             Validate();
             Debug.Log(string.Format("[Hollowmark] Loaded {0} weapons, {1} armor, {2} items, {3} enemies, {4} bosses, {5} weathers, {6} dungeons",
                 Weapons.Count, Armor.Count, Items.Count, Enemies.Count, Bosses.Count, Weathers.Count, Dungeons.Count));

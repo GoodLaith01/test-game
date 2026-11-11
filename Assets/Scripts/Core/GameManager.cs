@@ -33,6 +33,24 @@ namespace Hollowmark
         Hero hero;
         WeatherSystem weather;
 
+        /// <summary>
+        /// Clears static state when entering Play Mode. Unity can be set to skip the domain reload,
+        /// which would otherwise keep last session's destroyed enemies and messages around.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            Instance = null;
+            EnemyAI.All.Clear();
+            Hud.ClearMessages();
+        }
+
+        void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+            Time.timeScale = 1f;
+        }
+
         public void Init()
         {
             Instance = this;
@@ -61,6 +79,7 @@ namespace Hollowmark
 
             WorldMinutes = GameDatabase.Balance.startHour * 60f;
             gameObject.AddComponent<Hud>();
+            gameObject.AddComponent<Crafting.CraftingUi>(); // cooking, building and quest panels
             hero = Hero.Create(cam);
             hero.Stats.OnMessage += Hud.Push;
             EnterVillage();
@@ -135,11 +154,18 @@ namespace Hollowmark
 
         Transform NewWorld(string name)
         {
-            if (WorldRoot != null) Destroy(WorldRoot.gameObject);
+            if (WorldRoot != null)
+            {
+                // Destroy only happens at the end of the frame. Switch the old world off first so its colliders,
+                // triggers and enemies can't touch the hero or block spawn checks in the new one.
+                WorldRoot.gameObject.SetActive(false);
+                Destroy(WorldRoot.gameObject);
+            }
             EnemyAI.All.Clear();
             ActiveBoss = null;
             Raid = null;
             WorldRoot = new GameObject(name).transform;
+            foreach (var p in FindObjectsOfTypeAll<Phantom>()) Destroy(p.gameObject); // hallucinations don't follow you
             return WorldRoot;
         }
 
@@ -170,7 +196,10 @@ namespace Hollowmark
             defeated.Add(boss.DungeonId);
             Threat = Mathf.Max(0f, Threat - boss.Boss.threatReduction);
             ActiveBoss = null;
-            var portal = DungeonBuilder.MakeExitPortal(WorldRoot, boss.transform.position + boss.transform.forward * 3f);
+            var spot = boss.transform.position + boss.transform.forward * 3f;
+            if (!Layers.Fits(spot, 0.8f, 2f)) spot = boss.transform.position;
+            spot.y = 0f;
+            var portal = DungeonBuilder.MakeExitPortal(WorldRoot, spot);
             portal.name = "VictoryPortal";
             Hud.Instance.Banner(boss.Boss.name + " has fallen!", "The village breathes easier. A way home has opened.");
             if (defeated.Count >= GameDatabase.Dungeons.Count)
@@ -187,6 +216,7 @@ namespace Hollowmark
 
         public void Respawn()
         {
+            if (!hero.Stats.Dead) return; // the button can only be pressed once
             var inv = hero.Stats.Inventory;
             int lost = Mathf.FloorToInt(inv.Gold * GameDatabase.Balance.deathGoldLoss);
             inv.Gold -= lost;

@@ -11,7 +11,7 @@
       "skinColors": ["#5A6A40", "#4A5A48", "#6A6A50", "#506048"], "eyeColor": "#E8F040",
       "goldMin": 1, "goldMax": 6, "weaponDropChance": 0.2, "armorDropChance": 0.15, "itemDropChance": 0.5,
       "weaponDrops": ["gnarl_hook", "dirk", "tomahawk"], "armorDrops": ["gnarl_mask", "leather_cap", "leather_gloves"],
-      "itemDrops": ["apple", "bread", "cave_mushroom", "water_flask"]
+      "itemDrops": ["apple", "bread", "cave_mushroom", "water_flask", "gnarl_ear", "gnarl_ear"], "poison": 6
     },
     {
       "id": "hollowed",
@@ -24,7 +24,7 @@
       "skinColors": ["#8A8A88", "#7A7878", "#909088", "#6E7070"], "eyeColor": "#C0D8FF",
       "goldMin": 4, "goldMax": 14, "weaponDropChance": 0.35, "armorDropChance": 0.4, "itemDropChance": 0.5,
       "armorDrops": ["wool_coat", "buff_coat", "breeches", "jackboots", "tricorne", "morion", "chain_shirt"],
-      "itemDrops": ["hardtack", "salt_pork", "water_flask", "bandage", "powder_shot"]
+      "itemDrops": ["hardtack", "salt_pork", "water_flask", "bandage", "powder_shot", "hollow_locket", "hollow_locket"]
     },
     {
       "id": "bog_crawler",
@@ -37,7 +37,7 @@
       "skinColors": ["#3A4A5A", "#2A3A40", "#40483A", "#38404A"], "eyeColor": "#40FF90",
       "goldMin": 2, "goldMax": 8, "weaponDropChance": 0.1, "armorDropChance": 0.35, "itemDropChance": 0.4,
       "armorDrops": ["crawler_carapace"],
-      "itemDrops": ["cave_mushroom", "water_flask", "bandage"]
+      "itemDrops": ["cave_mushroom", "water_flask", "bandage", "crawler_venom", "crawler_venom"], "poison": 22
     },
     {
       "id": "ashen_imp",
@@ -51,7 +51,7 @@
       "skinColors": ["#6A2A20", "#7A3020", "#5A2020", "#803A28"], "eyeColor": "#FFB020",
       "goldMin": 3, "goldMax": 10, "weaponDropChance": 0.2, "armorDropChance": 0.25, "itemDropChance": 0.4,
       "weaponDrops": ["ember_glaive", "flintlock_pistol", "blunderbuss"], "armorDrops": ["ashen_bracers"],
-      "itemDrops": ["powder_shot", "water_flask", "smelling_salts"]
+      "itemDrops": ["powder_shot", "water_flask", "smelling_salts", "imp_ember", "imp_ember"]
     },
     {
       "id": "rotfang_brute",
@@ -64,7 +64,7 @@
       "skinColors": ["#5A6A4A", "#4A5A3A", "#6A5A4A", "#556045"], "eyeColor": "#FF6030",
       "goldMin": 8, "goldMax": 22, "weaponDropChance": 0.4, "armorDropChance": 0.45, "itemDropChance": 0.6,
       "weaponDrops": ["bone_cleaver", "boarding_axe", "halberd"], "armorDrops": ["brute_hide", "steel_gauntlets", "tassets"],
-      "itemDrops": ["salt_pork", "cheese", "physic", "small_beer"]
+      "itemDrops": ["salt_pork", "cheese", "physic", "small_beer", "brute_tusk", "brute_tusk"]
     }
   ]
 }

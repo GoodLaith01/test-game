@@ -29,6 +29,7 @@ namespace Hollowmark.World
             Market(root, new Vector3(18f, 0f, 0f));
             Well(root, new Vector3(0f, 0f, 0f));
             Gates(root);
+            Crafting.HomesteadBuilder.Build(root); // hearth, building plots, quest givers, larder and peddler
 
             // Decorative houses for the villagers.
             Building(root, new Vector3(18f, 0f, -18f), new Vector3(7f, 3.5f, 6f), Plaster, false, "Cottage");
@@ -38,7 +39,8 @@ namespace Hollowmark.World
 
             for (int i = 0; i < 6; i++)
             {
-                var pos = new Vector3(Random.Range(-25f, 25f), 0f, Random.Range(-20f, 20f));
+                // Pick an open spot, so nobody starts inside a house or a market stall.
+                var pos = Layers.ClearSpot(new Vector3(0f, 0f, -4f), new Vector2(25f, 18f), 0.4f, 1.8f, 30);
                 Villager.Spawn(root, pos, 300 + i);
             }
 

@@ -34,13 +34,27 @@ namespace Hollowmark.Player
 
         void OnDestroy() { if (stats != null) stats.Inventory.Changed -= Refresh; }
 
+        readonly Dictionary<ArmorSlot, ArmorDef> shownArmor = new Dictionary<ArmorSlot, ArmorDef>();
+
         void Refresh()
         {
+            if (Rig == null) return;
             var inv = stats.Inventory;
+            bool changed = false;
             foreach (ArmorSlot slot in System.Enum.GetValues(typeof(ArmorSlot)))
             {
+                // The inventory changes for every coin and bread roll; only rebuild clothes that actually changed.
+                ArmorInstance now;
+                ArmorDef nowDef = inv.Worn.TryGetValue(slot, out now) ? now.Def : null;
+                ArmorDef was;
+                shownArmor.TryGetValue(slot, out was);
+                if (was == nowDef && armorParts.ContainsKey(slot)) continue;
+                shownArmor[slot] = nowDef;
+                changed = true;
                 List<GameObject> parts;
-                if (armorParts.TryGetValue(slot, out parts)) foreach (var p in parts) if (p != null) Destroy(p);
+                if (armorParts.TryGetValue(slot, out parts))
+                    foreach (var p in parts)
+                        if (p != null) { p.SetActive(false); Destroy(p); } // hide now; Destroy waits for the end of the frame
                 armorParts[slot] = new List<GameObject>();
                 ArmorInstance worn;
                 if (inv.Worn.TryGetValue(slot, out worn)) BuildArmor(slot, worn.Def);
@@ -48,11 +62,13 @@ namespace Hollowmark.Player
 
             if (shownWeapon != inv.Equipped)
             {
-                if (weaponModel != null) Destroy(weaponModel);
+                if (weaponModel != null) { weaponModel.SetActive(false); Destroy(weaponModel); }
+                weaponModel = null;
                 shownWeapon = inv.Equipped;
-                if (shownWeapon != null) weaponModel = CharacterBuilder.BuildWeapon(shownWeapon, Rig.Hand);
+                if (shownWeapon != null && Rig.Hand != null) weaponModel = CharacterBuilder.BuildWeapon(shownWeapon, Rig.Hand);
+                changed = true;
             }
-            Rig.CollectRenderers();
+            if (changed) Rig.CollectRenderers();
         }
 
         void BuildArmor(ArmorSlot slot, ArmorDef def)
@@ -109,7 +125,7 @@ namespace Hollowmark.Player
         void Update()
         {
             // In underwear mode the smallclothes wobble a little, for comedy.
-            if (underwear == null || !stats.Inventory.InUnderwear) return;
+            if (underwear == null || Rig == null || !stats.Inventory.InUnderwear) return;
             var basis = Rig.TrunkScale;
             foreach (var u in underwear)
                 if (u != null) u.transform.localScale = new Vector3(basis.x * (1f + Mathf.Sin(Time.time * 12f) * 0.02f * Rig.MoveSpeed), basis.y, basis.z);

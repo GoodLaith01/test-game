@@ -69,8 +69,12 @@ namespace Hollowmark.Player
             if (Stats.Dead) { Focus = null; return; }
             Focus = FindFocus();
             if (InputLocked || Focus == null) return;
-            if (GameInput.KeyDown(KeyCode.E)) Focus.Interact(this);
-            if (Focus != null && Focus.HoldToUse && GameInput.Key(KeyCode.E)) Focus.HoldTick(this, Time.deltaTime);
+            var focus = Focus;
+            if (focus.HoldToUse)
+            {
+                if (GameInput.Key(KeyCode.E)) focus.HoldTick(this, Time.deltaTime);
+            }
+            else if (GameInput.KeyDown(KeyCode.E)) focus.Interact(this);
         }
 
         Interactable FindFocus()
@@ -81,7 +85,7 @@ namespace Hollowmark.Player
             foreach (var c in cols)
             {
                 var it = c.GetComponentInParent<Interactable>();
-                if (it == null || !it.enabled || !it.CanUse(this)) continue;
+                if (it == null || !it.enabled || !it.isActiveAndEnabled || !it.CanUse(this)) continue;
                 float d = (it.transform.position - transform.position).sqrMagnitude;
                 if (d < bestDist) { best = it; bestDist = d; }
             }
@@ -92,7 +96,8 @@ namespace Hollowmark.Player
 
         public void Equip(WeaponDef w)
         {
-            if (w == null) return;
+            if (w == null || Stats.Inventory.Equipped == w) return;
+            if (!Stats.Inventory.Weapons.Contains(w)) return; // sold or dropped since the button was drawn
             if (!CanWield(w))
             {
                 Say(w.name + " is too heavy! Train with the weights until Strength " + w.requiredStrength + ".");

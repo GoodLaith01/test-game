@@ -750,6 +750,7 @@ namespace Hollowmark.Visuals
                             case ItemKind.Medicine: Bottle(c, BottleShape.Tall, t, 0.65f, Wood, Linen); break;
                             case ItemKind.Tonic: Bottle(c, BottleShape.Small, t, 0.8f, Wood, Linen); break;
                             case ItemKind.Ammo: Cartridge(c); break;
+                            case ItemKind.Meal: Bowl(c, t); break;
                             default: Sack(c, t); break;
                         }
                     break;
@@ -972,6 +973,21 @@ namespace Hollowmark.Visuals
             c.Capsule(V(18, 82), V(82, 82), 5f, IconCanvas.Mul(parchment, 0.9f), 0.2f);
             for (int i = 0; i < 6; i++) c.Line(V(30, 70 - i * 7f), V(i % 3 == 2 ? 56 : 70, 70 - i * 7f), 0.6f, new Color(0.35f, 0.25f, 0.15f));
             c.Circle(V(64, 34), 7f, tint.a > 0f ? tint : new Color(0.7f, 0.1f, 0.1f), 0.4f);
+        }
+
+        static void Bowl(IconCanvas c, Color food)
+        {
+            var wood = new Color(0.55f, 0.36f, 0.2f);
+            for (int i = 0; i < 3; i++)
+            {
+                float x = 38 + i * 12f;
+                c.Stroke(new[] { V(x, 60), V(x + 4, 70), V(x - 2, 78), V(x + 3, 88) }, 1.4f, new Color(1f, 1f, 1f, 0.5f));
+            }
+            c.Poly(Concat(new[] { V(14, 52), V(86, 52) }, Arc(V(50, 52), 36f, 32f, 0f, -180f, 20)), wood, 0.2f, p => 0.85f + 0.2f * IconCanvas.Noise(new Vector2(p.x * 0.2f, p.y * 1.5f)));
+            c.Ellipse(V(50, 52), 36f, 8f, IconCanvas.Mul(wood, 1.15f));
+            c.Ellipse(V(50, 53), 32f, 6f, food, 0.3f, 0f, p => 0.85f + 0.3f * IconCanvas.Noise(p * 0.5f));
+            for (int i = 0; i < 5; i++) c.Circle(V(30 + i * 10f, 53 + 2f * IconCanvas.Hash(i, 4f)), 2.2f, IconCanvas.Mul(food, 1.3f), 0.4f);
+            c.Capsule(V(66, 54), V(86, 84), 2.2f, IconCanvas.Mul(wood, 1.2f), 0.3f);
         }
 
         static void Sack(IconCanvas c, Color tint)

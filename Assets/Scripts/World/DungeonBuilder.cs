@@ -36,11 +36,12 @@ namespace Hollowmark.World
                 var room = new GameObject(isBoss ? "BossArena" : "Room" + i).transform;
                 room.SetParent(root, false);
                 room.localPosition = center;
-                Room(room, def, size, doors);
+                bool camp = i > 0 && !isBoss && (i == last - 1 || (def.campEveryRooms > 0 && i % def.campEveryRooms == 0));
+                // Keep the middle of special rooms free of pillars: the spawn and way home, camps, and the boss.
+                Room(room, def, size, doors, i == 0 || isBoss || camp ? size * 0.42f : 3f);
 
                 if (i < last) Corridor(root, def, center, cells[i + 1] - cells[i], size, spacing, i + 1 == last ? def.roomSize * 1.4f : def.roomSize);
 
-                bool camp = i > 0 && !isBoss && (i == last - 1 || (def.campEveryRooms > 0 && i % def.campEveryRooms == 0));
                 if (i == 0)
                 {
                     MakeExitPortal(room, new Vector3(0f, 0f, -size * 0.3f));
@@ -94,7 +95,7 @@ namespace Hollowmark.World
             return line;
         }
 
-        static void Room(Transform room, DungeonDef def, float size, List<Vector2Int> doors)
+        static void Room(Transform room, DungeonDef def, float size, List<Vector2Int> doors, float clearRadius)
         {
             float h = def.wallHeight, t = 1f;
             Prim.Box(room, new Vector3(0f, -0.5f, 0f), new Vector3(size, 1f, size), def.Floor, true, "Floor");
@@ -122,7 +123,12 @@ namespace Hollowmark.World
             for (int i = 0; i < pillars; i++)
             {
                 var p = new Vector3(Random.Range(-size * 0.3f, size * 0.3f), 0f, Random.Range(-size * 0.3f, size * 0.3f));
-                if (p.magnitude < 3f) continue;
+                if (p.magnitude < clearRadius) continue;
+                // Never block a doorway's approach.
+                bool inDoorLane = false;
+                foreach (var d in doors)
+                    if ((d.x != 0 && Mathf.Abs(p.z) < DoorWidth / 2f + 1.2f) || (d.y != 0 && Mathf.Abs(p.x) < DoorWidth / 2f + 1.2f)) inDoorLane = true;
+                if (inDoorLane) continue;
                 Prim.Box(room, p + Vector3.up * h / 2f, new Vector3(1.2f, h, 1.2f), def.Wall * 0.9f, true, "Pillar");
             }
             // Rubble and bones.
@@ -170,8 +176,8 @@ namespace Hollowmark.World
             {
                 var e = GameDatabase.Enemy(def.enemies[Random.Range(0, def.enemies.Length)]);
                 if (e == null) continue;
-                var p = room.position + new Vector3(Random.Range(-size * 0.35f, size * 0.35f), 0.3f, Random.Range(-size * 0.35f, size * 0.35f));
-                EnemyAI.Spawn(e, p, def.tier, room);
+                var p = Layers.ClearSpot(room.position, new Vector2(size * 0.35f, size * 0.35f), Mathf.Max(0.3f, e.width * 0.5f), e.height);
+                EnemyAI.Spawn(e, p + Vector3.up * 0.3f, def.tier, room);
             }
             if (Random.value < 0.5f) Cache(room, def, new Vector3(size * 0.38f, 0f, size * 0.38f));
         }

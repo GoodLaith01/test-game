@@ -36,6 +36,7 @@ namespace Hollowmark.Player
         public float BodyTemp = 37f;
         public float Insanity;                         // 0..100
         public float HoursAwake;
+        public float Poison;                           // 0..100, drains health until it wears off or is cured
         public bool Blocking, Rolling;
 
         public readonly Skill Strength = new Skill("Strength");
@@ -43,11 +44,12 @@ namespace Hollowmark.Player
         public readonly Skill Swordsmanship = new Skill("Swordsmanship");
 
         public Inventory Inventory = new Inventory();
+        public readonly Buffs Buffs = new Buffs();     // cooked meals and homestead buildings
         public bool Dead { get; private set; }
         public bool IsAlive { get { return !Dead; } }
 
-        public float MaxHealth { get { return GameDatabase.Balance.baseHealth + (Strength.Level - 1) * 6f + (Endurance.Level - 1) * 4f; } }
-        public float MaxStamina { get { return GameDatabase.Balance.baseStamina + (Endurance.Level - 1) * 12f + (Strength.Level - 1) * 3f; } }
+        public float MaxHealth { get { return GameDatabase.Balance.baseHealth + (Strength.Level - 1) * 6f + (Endurance.Level - 1) * 4f + Buffs.MaxHealthBonus; } }
+        public float MaxStamina { get { return GameDatabase.Balance.baseStamina + (Endurance.Level - 1) * 12f + (Strength.Level - 1) * 3f + Buffs.MaxStaminaBonus; } }
 
         public bool Cold { get { return BodyTemp < 35.8f; } }
         public bool Hot { get { return BodyTemp > 38.3f; } }
@@ -67,6 +69,7 @@ namespace Hollowmark.Player
         }
 
         void Message(string text) { if (OnMessage != null) OnMessage(text); }
+        public void Say(string text) { Message(text); }
 
         public void Tick(float dt, float gameMinutes)
         {
@@ -106,6 +109,15 @@ namespace Hollowmark.Player
             }
             if (Insanity >= 100f) Hurt(B.insanityDamagePerSecond * dt, "madness");
 
+            // Poison from bites and stings: drains health and slowly wears off.
+            if (Poison > 0f)
+            {
+                Hurt((0.4f + Poison * 0.02f) * dt, "poison");
+                Poison = Mathf.Max(0f, Poison - 1.2f * dt);
+                if (Poison <= 0f) Message("The poison has worn off.");
+            }
+            Buffs.Tick(dt, this);
+
             // Stamina regeneration.
             float regen = B.staminaRegenPerSecond;
             if (Hunger < 25f) regen *= 0.5f;
@@ -113,10 +125,12 @@ namespace Hollowmark.Player
             if (Cold || Hot) regen *= 0.6f;
             regen *= 1f / (1f + Inventory.ArmorWeight * 0.08f);
             if (weather != null) regen *= weather.StaminaRegenMultiplier;
+            regen *= Buffs.StaminaRegenMultiplier;
+            if (Poison > 30f) regen *= 0.7f;
             if (Time.time - LastDamageTime > 0.8f && !Blocking) Stamina = Mathf.Min(MaxStamina, Stamina + regen * dt);
 
             // Slow natural healing when fed and watered.
-            if (Hunger > 50f && Thirst > 50f && Time.time - LastDamageTime > 6f)
+            if (Hunger > 50f && Thirst > 50f && Poison <= 0f && Time.time - LastDamageTime > 6f)
                 Health = Mathf.Min(MaxHealth, Health + dt * (safe ? 2f : 0.4f));
 
             if (Insanity >= 60f && Time.time - lastPhantom > 25f && Random.value < dt * 0.1f)
@@ -139,7 +153,7 @@ namespace Hollowmark.Player
 
         public void TakeDamage(DamageInfo info)
         {
-            if (Dead || Rolling) return;
+            if (Dead || Rolling || info.Amount <= 0f) return;
             float dmg = info.Amount;
 
             if (Blocking && info.IsMelee)
@@ -165,8 +179,10 @@ namespace Hollowmark.Player
                 if (broken.Count > 0 && Inventory.InUnderwear) Message(UnderwearLine());
             }
 
+            dmg *= Buffs.DamageTakenMultiplier;
             LastDamageTime = Time.time;
             Hurt(dmg, "wounds");
+            if (info.Poison > 0f) AddPoison(info.Poison);
         }
 
         static readonly string[] UnderwearLines =
@@ -181,7 +197,7 @@ namespace Hollowmark.Player
 
         void Hurt(float amount, string cause)
         {
-            if (Dead || amount <= 0f) return;
+            if (Dead || amount <= 0f || float.IsNaN(amount)) return;
             Health -= amount;
             if (Health <= 0f)
             {
@@ -191,11 +207,22 @@ namespace Hollowmark.Player
             }
         }
 
+        public void AddPoison(float amount)
+        {
+            if (Dead || amount <= 0f) return;
+            float taken = amount * (1f - Buffs.PoisonResist);
+            if (taken < 0.5f) { if (Random.value < 0.3f) Message("Your poison ward holds."); return; }
+            bool first = Poison <= 0f;
+            Poison = Mathf.Min(100f, Poison + taken);
+            if (first) Message("You are poisoned! Garlic broth or a theriac will cure it.");
+        }
+
         public void Heal(float amount) { Health = Mathf.Min(MaxHealth, Health + amount); }
 
         public void Consume(ItemDef item)
         {
-            if (item == null || item.Kind == ItemKind.Ammo) return;
+            if (Dead || item == null) return;
+            if (!item.Usable) { Message(item.name + " needs to be cooked or built with first."); return; }
             if (!Inventory.TakeItem(item.id)) return;
             Hunger = Mathf.Clamp(Hunger + item.hunger, 0f, 100f);
             Thirst = Mathf.Clamp(Thirst + item.thirst, 0f, 100f);
@@ -204,6 +231,8 @@ namespace Hollowmark.Player
             Insanity = Mathf.Clamp(Insanity + item.insanity, 0f, 100f);
             BodyTemp = Mathf.Clamp(BodyTemp + item.warmth, 33f, 41f);
             Message("Used " + item.name + ".");
+            var buff = CraftingDatabase.Buff(item.buff);
+            if (buff != null) Buffs.Apply(buff, this);
         }
 
         /// <summary>Sleeping in a bed or tent resets stamina and calms the mind.</summary>
@@ -216,6 +245,7 @@ namespace Hollowmark.Player
             BodyTemp = Mathf.MoveTowards(BodyTemp, 37f, hours * 0.5f);
             Hunger = Mathf.Max(0f, Hunger - B.hungerPerGameHour * hours * 0.5f);
             Thirst = Mathf.Max(0f, Thirst - B.thirstPerGameHour * hours * 0.5f);
+            Poison = Mathf.Max(0f, Poison - hours * 15f);
         }
 
         public void Revive()
@@ -228,6 +258,8 @@ namespace Hollowmark.Player
             Insanity = Mathf.Min(Insanity, 20f);
             HoursAwake = 0f;
             BodyTemp = 37f;
+            Poison = 0f;
+            Buffs.Clear();
         }
 
         public void TrainSkill(Skill skill, float xp)
