@@ -76,38 +76,37 @@ namespace Hollowmark.World
             if (Current == null) return;
             if (Time.time > nextChange) Pick(false);
 
-            // Day/night only matters outdoors.
-            float dayLight = 1f, dusk = 0f;
-            nightChill = 0f;
+            float k = Time.deltaTime * 0.3f;
             if (Outdoors && GameManager.Instance != null)
             {
-                float hour = GameManager.Instance.Hour;
-                float sunHeight = Mathf.Sin((hour - 6f) / 24f * Mathf.PI * 2f); // -1..1, peaks at noon
-                dayLight = Mathf.Clamp01(sunHeight * 1.5f + 0.35f);
-                dusk = Mathf.Clamp01(1f - Mathf.Abs(sunHeight) * 3f); // golden light around sunrise and sunset
-                nightChill = -6f * (1f - dayLight);
-                if (Sun != null) Sun.transform.rotation = Quaternion.Euler(Mathf.Lerp(-10f, 170f, (hour - 5f) / 15f), -30f, 0f);
+                // Outdoors the hour of the day drives the sky, sun, moon, fog, ambient light and shadows.
+                DayNight.Apply(GameManager.Instance.Hour, Sun, fogTarget, fogDensityTarget, lightTarget, lightIntensityTarget, ambientTarget, Time.deltaTime);
+                nightChill = DayNight.Chill;
+            }
+            else
+            {
+                // Underground there is no day or night, only the dungeon's own weather.
+                DayNight.Underground();
+                nightChill = 0f;
+                RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, fogTarget, k);
+                RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, fogDensityTarget, k);
+                Atmosphere.SetAmbient(Color.Lerp(RenderSettings.ambientSkyColor / 1.1f, ambientTarget, k), fogTarget);
+                Atmosphere.UpdateSky(RenderSettings.fogColor, 1f, false);
+                if (Sun != null)
+                {
+                    Sun.color = Color.Lerp(Sun.color, lightTarget, k);
+                    Sun.intensity = Mathf.Lerp(Sun.intensity, lightIntensityTarget, Time.deltaTime * 4f);
+                    Sun.shadows = LightShadows.Soft;
+                    Sun.shadowStrength = 0.8f;
+                    Sun.transform.rotation = Quaternion.Euler(55f, -30f, 0f); // a fixed light from above
+                }
             }
 
-            float k = Time.deltaTime * 0.3f;
-            RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, fogTarget * Mathf.Lerp(0.25f, 1f, dayLight), k);
-            RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, fogDensityTarget, k);
-            // Night is darker and bluer (moonlight), day takes the weather's own ambient colour.
-            var ambientNow = Color.Lerp(ambientTarget * new Color(0.45f, 0.55f, 0.85f) * 0.45f, ambientTarget, dayLight);
-            Atmosphere.SetAmbient(Color.Lerp(RenderSettings.ambientSkyColor / 1.1f, ambientNow, k), fogTarget);
-            Atmosphere.UpdateSky(RenderSettings.fogColor, dayLight, Outdoors);
-
-            if (Sun != null)
+            if (Sun != null && Current.lightning && Time.time > nextLightning)
             {
-                Sun.color = Color.Lerp(Sun.color, Color.Lerp(lightTarget, new Color(1f, 0.62f, 0.38f), dusk * 0.65f), k);
-                float target = lightIntensityTarget * dayLight;
-                if (Current.lightning && Time.time > nextLightning)
-                {
-                    nextLightning = Time.time + Random.Range(6f, 18f);
-                    Sun.intensity = 3f;
-                    if (Hero.Instance != null && Hero.Instance.Cam != null && Random.value < 0.3f) Hero.Instance.Cam.Shake(0.6f);
-                }
-                Sun.intensity = Mathf.Lerp(Sun.intensity, target, Time.deltaTime * 4f);
+                nextLightning = Time.time + Random.Range(6f, 18f);
+                Sun.intensity = 3f;
+                if (Hero.Instance != null && Hero.Instance.Cam != null && Random.value < 0.3f) Hero.Instance.Cam.Shake(0.6f);
             }
 
             if (particles != null && Hero.Instance != null)

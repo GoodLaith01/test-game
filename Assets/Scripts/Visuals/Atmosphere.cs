@@ -241,6 +241,8 @@ namespace Hollowmark.Visuals
     public class Flicker : MonoBehaviour
     {
         public float Amount = 0.18f, Speed = 7f;
+        /// <summary>Street lamps and windows: dim by day, bright after dark.</summary>
+        public bool NightLamp;
         Light l;
         float baseIntensity, seed;
 
@@ -255,7 +257,8 @@ namespace Hollowmark.Visuals
         void Update()
         {
             float n = Mathf.PerlinNoise(seed, Time.time * Speed) - 0.5f;
-            l.intensity = baseIntensity * (1f + n * 2f * Amount);
+            float night = NightLamp ? Mathf.Lerp(0.25f, 1.5f, DayNight.Night) : 1f;
+            l.intensity = baseIntensity * night * (1f + n * 2f * Amount);
         }
     }
 

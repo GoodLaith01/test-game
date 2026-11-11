@@ -180,8 +180,12 @@ kind automatically. To use your own art instead, drop a PNG at `Assets/Resources
   flagstones, brick, wood, thatch, plaster, linen, wool, leather, metal, skin, scales...). The textures are in
   `Assets/Resources/Textures` and are made by `python3 Tools/make_textures.py`. Builders pick a surface from an
   object's name and colour (`Surfaces.Guess`), so new buildings are textured automatically.
-- **Light and sky.** A procedural sky with golden sunrise and sunset, three-colour ambient light, longer and sharper
-  shadows, flickering torches and lamps with living flames, and a moonlit blue night.
+- **Day and night.** In the village the hour drives everything (`DayNight.cs`, `Assets/Resources/Shaders/Sky.shader`):
+  the sun rises in the east and sets in the west, dawn is misty and golden, noon is clear, sunset is red, and night
+  has a moon that casts soft shadows, twinkling stars, blue ambient light and street lamps that glow brighter.
+  Overcast weather greys the sky and softens shadows.
+- **Shadows.** Sharp sun shadows that soften in cloud, moonlight shadows at night, real shadows from the torches,
+  lamps and fires nearest the hero (`ShadowLights`), and a soft contact shadow under every character (`BlobShadow`).
 - **Post-processing.** Bloom, a filmic tone curve, a warm period colour grade and a vignette. Built-in pipeline:
   `Assets/Resources/Shaders/PostFx.shader`. URP: a global Volume is created at runtime.
 - **Scenery.** A forest, hills, rocks and grass around the village; puddles, bones and chains in the dungeons.

@@ -113,6 +113,7 @@ namespace Hollowmark.Visuals
         void Start()
         {
             idleSeed = Random.value * 10f;
+            if (Body != null) BlobShadow.Add(this, Mathf.Max(0.32f, Height * 0.24f) * (Legs.Count > 2 ? 2.2f : 1f));
             animator = GetComponentInChildren<Animator>();
             if (animator == null) return;
             foreach (var p in animator.parameters)

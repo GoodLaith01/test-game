@@ -75,6 +75,7 @@ namespace Hollowmark
             sun.transform.SetParent(transform, false);
 
             Visuals.Atmosphere.Setup(cam, sun);
+            gameObject.AddComponent<Visuals.ShadowLights>(); // torches and lamps near the hero cast real shadows
             weather = gameObject.AddComponent<WeatherSystem>();
             weather.Sun = sun;
 
