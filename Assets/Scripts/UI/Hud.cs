@@ -91,8 +91,9 @@ namespace Hollowmark.UI
             H.InputLocked = menu;
             GameManager.Instance.Paused = screen != Screen.None && screen != Screen.Shop && screen != Screen.Inventory;
             Time.timeScale = GameManager.Instance.Paused ? 0f : 1f;
-            Cursor.lockState = menu ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = menu;
+            // Touch play never locks the cursor (in the editor's touch test mode the mouse is the finger).
+            Cursor.lockState = menu || TouchControls.Active ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = menu || TouchControls.Active;
             // Paint item pictures a few at a time behind the intro and pause screens, so shops open without a hitch.
             if (screen == Screen.Intro || screen == Screen.Help) ItemIcons.WarmUp();
 
@@ -184,14 +185,19 @@ namespace Hollowmark.UI
         {
             if (H == null) return;
             Styles();
-            float w = UnityEngine.Screen.width, h = UnityEngine.Screen.height;
+            float w, h;
+            UiScale.Apply(out w, out h);
+            // On a touch screen the joystick owns the bottom left and the buttons own the right side,
+            // so the bars move to the top left and the weapon panel moves under the top-right buttons.
+            bool touch = TouchControls.Active;
+            float L = 16 + UiScale.Left;
             var s = H.Stats;
             var gm = GameManager.Instance;
 
             ScreenEffects(w, h, s);
 
             // Survival bars, bottom left.
-            float bx = 16, by = h - 150;
+            float bx = L, by = touch ? 112 + UiScale.Top : h - 150;
             Bar(bx, by, "Health", s.Health, s.MaxHealth, new Color(0.75f, 0.12f, 0.1f));
             Bar(bx, by + 22, "Stamina", s.Stamina, s.MaxStamina, new Color(0.25f, 0.65f, 0.25f));
             Bar(bx, by + 44, "Hunger", s.Hunger, 100f, new Color(0.8f, 0.55f, 0.2f), s.Hunger <= 0f ? "STARVING" : s.Hunger < 25f ? "hungry" : "");
@@ -204,18 +210,18 @@ namespace Hollowmark.UI
             var weather = WeatherSystem.Instance;
             string where = gm.InVillage ? "Hollowmark Village" : gm.CurrentDungeon.name;
             int hour = Mathf.FloorToInt(gm.Hour), minute = Mathf.FloorToInt((gm.Hour - hour) * 60f);
-            GUI.Label(new Rect(16, 10, 600, 22), string.Format("<b>{0}</b>   Day {1}, {2:00}:{3:00}   {4}", where, gm.Day, hour, minute,
+            GUI.Label(new Rect(L, 10 + UiScale.Top, 600, 22), string.Format("<b>{0}</b>   Day {1}, {2:00}:{3:00}   {4}", where, gm.Day, hour, minute,
                 weather != null && weather.Current != null ? weather.Current.name : ""), label);
-            GUI.Label(new Rect(16, 32, 600, 22), string.Format("<color=#ffd040>{0} gold</color>   Bosses slain {1}/{2}", s.Inventory.Gold, gm.BossesDefeated, GameDatabase.Dungeons.Count), label);
-            Rect(new Rect(16, 58, 200, 12), new Color(0f, 0f, 0f, 0.6f));
-            Rect(new Rect(17, 59, 198 * gm.Threat / 100f, 10), Color.Lerp(new Color(0.9f, 0.7f, 0.2f), new Color(0.9f, 0.1f, 0.1f), gm.Threat / 100f));
-            GUI.Label(new Rect(222, 52, 300, 22), "Village threat " + gm.Threat.ToString("0") + (gm.Raid != null ? "  <color=#ff4040>RAID!</color>" : ""), small);
+            GUI.Label(new Rect(L, 32 + UiScale.Top, 600, 22), string.Format("<color=#ffd040>{0} gold</color>   Bosses slain {1}/{2}", s.Inventory.Gold, gm.BossesDefeated, GameDatabase.Dungeons.Count), label);
+            Rect(new Rect(L, 58 + UiScale.Top, 200, 12), new Color(0f, 0f, 0f, 0.6f));
+            Rect(new Rect(L + 1, 59 + UiScale.Top, 198 * gm.Threat / 100f, 10), Color.Lerp(new Color(0.9f, 0.7f, 0.2f), new Color(0.9f, 0.1f, 0.1f), gm.Threat / 100f));
+            GUI.Label(new Rect(L + 206, 52 + UiScale.Top, 300, 22), "Village threat " + gm.Threat.ToString("0") + (gm.Raid != null ? "  <color=#ff4040>RAID!</color>" : ""), small);
 
             // Weapon and armor, bottom right.
             var weapon = H.Combat.Current;
-            float rx = w - 330, ry = h - 170;
+            float rx = w - 330 - UiScale.Right, ry = touch ? 64 + UiScale.Top : h - 170;
             string ammo = weapon.Kind == WeaponKind.Firearm
-                ? string.Format("  {0}  (powder & shot: {1})", s.Inventory.LoadedRounds > 0 ? "<color=#80ff80>LOADED</color>" : "<color=#ff8080>empty, R to reload</color>", s.Inventory.Count(PlayerCombat.AmmoId))
+                ? string.Format("  {0}  (powder & shot: {1})", s.Inventory.LoadedRounds > 0 ? "<color=#80ff80>LOADED</color>" : (touch ? "<color=#ff8080>empty, tap Reload</color>" : "<color=#ff8080>empty, R to reload</color>"), s.Inventory.Count(PlayerCombat.AmmoId))
                 : "";
             GUI.Label(new Rect(rx, ry, 330, 22), "<b>" + weapon.name + "</b>" + ammo, label);
             if (H.Combat.Reloading)
@@ -240,17 +246,17 @@ namespace Hollowmark.UI
                     line++;
                 }
             }
-            GUI.Label(new Rect(rx, h - 26, 330, 22), "Tab inventory   Q eat   F drink   H heal   F1 help", small);
+            if (!touch) GUI.Label(new Rect(rx, h - 26, 330, 22), "Tab inventory   Q eat   F drink   H heal   F1 help", small);
 
             // Crosshair and prompt.
             if (screen == Screen.None && !SideMenuOpen)
             {
-                Rect(new Rect(w / 2 - 1, h / 2 - 8, 2, 16), new Color(1, 1, 1, 0.6f));
-                Rect(new Rect(w / 2 - 8, h / 2 - 1, 16, 2), new Color(1, 1, 1, 0.6f));
+                if (!touch) Rect(new Rect(w / 2 - 1, h / 2 - 8, 2, 16), new Color(1, 1, 1, 0.6f));
+                if (!touch) Rect(new Rect(w / 2 - 8, h / 2 - 1, 16, 2), new Color(1, 1, 1, 0.6f));
                 if (H.Focus != null)
                 {
                     Rect(new Rect(w / 2 - 260, h * 0.66f, 520, 30), new Color(0f, 0f, 0f, 0.55f));
-                    GUI.Label(new Rect(w / 2 - 260, h * 0.66f, 520, 30), "[E] " + H.Focus.Prompt(H), centered);
+                    GUI.Label(new Rect(w / 2 - 260, h * 0.66f, 520, 30), (touch ? "Tap Use: " : "[E] ") + H.Focus.Prompt(H), centered);
                 }
             }
 
@@ -258,20 +264,22 @@ namespace Hollowmark.UI
             var boss = gm.ActiveBoss;
             if (boss != null && boss.IsAlive && Vector3.Distance(boss.transform.position, H.transform.position) < 35f)
             {
-                Rect(new Rect(w / 2 - 300, 20, 600, 20), new Color(0f, 0f, 0f, 0.7f));
-                Rect(new Rect(w / 2 - 298, 22, 596 * boss.Health / boss.MaxHealth, 16), new Color(0.6f, 0.05f, 0.05f));
-                GUI.Label(new Rect(w / 2 - 300, 40, 600, 24), boss.Boss.name + ", " + boss.Boss.title, centered);
+                // Touch: bottom centre, between the joystick and the buttons (the top is full of buttons).
+                float half = touch ? 190 : 300, top = touch ? h - UiScale.Bottom - 60 : 20;
+                Rect(new Rect(w / 2 - half, top, half * 2, 20), new Color(0f, 0f, 0f, 0.7f));
+                Rect(new Rect(w / 2 - half + 2, top + 2, (half * 2 - 4) * boss.Health / boss.MaxHealth, 16), new Color(0.6f, 0.05f, 0.05f));
+                GUI.Label(new Rect(w / 2 - half, top + 20, half * 2, 24), boss.Boss.name + ", " + boss.Boss.title, centered);
             }
 
             // Messages.
-            float my = h - 330;
+            float my = touch ? 262 + UiScale.Top : h - 330;
             foreach (var m in messages)
             {
                 float age = Time.time - m.Time;
                 if (age > 9f) continue;
                 var old = GUI.color;
                 GUI.color = new Color(1, 1, 1, Mathf.Clamp01(9f - age));
-                GUI.Label(new Rect(16, my, 640, 22), m.Text, label);
+                GUI.Label(new Rect(L, my, touch ? 520 : 640, 22), m.Text, label);
                 GUI.color = old;
                 my += 21;
             }
@@ -338,7 +346,14 @@ namespace Hollowmark.UI
             return r;
         }
 
-        const string Controls =
+        static string Controls { get { return TouchControls.Active ? TouchControlsHelp : KeyboardControls; } }
+
+        const string TouchControlsHelp =
+            "<b>Left thumb</b> move (push past the ring to sprint)   <b>Drag right side</b> look   <b>Pinch</b> zoom\n" +
+            "<b>Attack / Fire</b>   <b>Block / Aim</b> (hold)   <b>Roll</b>   <b>Jump</b>   <b>Reload</b>   <b>Use</b> (hold on weights)\n" +
+            "<b>Bag</b> inventory   <b>Eat</b>   <b>Drink</b>   <b>Heal</b>   <b>Skills</b>   <b>Menu</b> pause   <b>Close</b> leaves any menu";
+
+        const string KeyboardControls =
             "<b>WASD</b> move   <b>Shift</b> sprint   <b>Space</b> jump   <b>C</b> dodge roll   <b>Mouse</b> look\n" +
             "<b>Left click</b> attack / fire   <b>Right click</b> block (melee) or aim (firearm)   <b>R</b> reload\n" +
             "<b>E</b> interact (hold E on weights)   <b>Tab</b> inventory   <b>Q</b> eat   <b>F</b> drink   <b>H</b> bandage   <b>Esc</b> pause";

@@ -83,6 +83,7 @@ namespace Hollowmark
 
             WorldMinutes = GameDatabase.Balance.startHour * 60f;
             gameObject.AddComponent<Hud>();
+            gameObject.AddComponent<TouchControls>();       // joystick and buttons on phones and tablets
             gameObject.AddComponent<Crafting.CraftingUi>(); // cooking, building and quest panels
             gameObject.AddComponent<Family.FamilyUi>();     // talking to Olmar
             gameObject.AddComponent<SkillsUi>();            // character level, skill trees and the ability bar (K)

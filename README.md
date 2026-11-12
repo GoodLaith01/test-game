@@ -39,6 +39,11 @@ Handling** to *Both*.
 | 1 / 2 / 3 / 4 | Use the abilities on those keys |
 | Esc or F1 | Pause and help |
 
+**Touch screens (iPhone, iPad, phone browsers).** On-screen controls turn on by themselves: a thumb joystick on the
+left, drag the right side to look, pinch to zoom, and buttons for attack, block, roll, jump, use, reload, abilities,
+inventory, skills and eating. Press F2 in the editor to try them with the mouse. See [IPHONE.md](IPHONE.md) for the
+full layout and how to get the game onto an iPhone.
+
 ## What is in the slice
 
 **Village hub (Hollowmark).** Your house with a bed (sleep until morning). A training yard with dummies (hit them
