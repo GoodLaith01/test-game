@@ -21,7 +21,7 @@ namespace Hollowmark.Player
             if (Target == null) return;
             var hero = Hero.Instance;
             bool locked = hero != null && hero.InputLocked;
-            if (!locked && Cursor.lockState == CursorLockMode.Locked)
+            if (!locked && (Cursor.lockState == CursorLockMode.Locked || GameInput.TouchMode))
             {
                 var d = GameInput.MouseDelta;
                 Yaw += d.x * Sensitivity;

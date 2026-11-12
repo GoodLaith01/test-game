@@ -90,7 +90,8 @@ namespace Hollowmark.Crafting
             if (H == null) return;
             Styles();
             GUI.depth = -1; // above the main HUD
-            float w = UnityEngine.Screen.width, h = UnityEngine.Screen.height;
+            float w, h;
+            UiScale.Apply(out w, out h);
             bool hudScreen = Hud.Instance != null && Hud.Instance.AnyScreenOpen;
             if (!hudScreen) Corner(w);
 

@@ -78,7 +78,8 @@ namespace Hollowmark.Family
             if (Hud.Instance != null && Hud.Instance.AnyScreenOpen) return;
             Styles();
             GUI.depth = -1;
-            float w = Screen.width, h = Screen.height;
+            float w, h;
+            UiScale.Apply(out w, out h);
             float pw = Mathf.Min(720, w - 40), ph = Mathf.Min(560, h - 40);
             var r = new Rect((w - pw) / 2, (h - ph) / 2, pw, ph);
             Fill(new Rect(0, 0, w, h), new Color(0, 0, 0, 0.45f));

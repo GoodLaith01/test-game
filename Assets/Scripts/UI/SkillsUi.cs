@@ -88,12 +88,14 @@ namespace Hollowmark.UI
             if (H == null) return;
             Styles();
             GUI.depth = -1;
-            float w = UnityEngine.Screen.width, h = UnityEngine.Screen.height;
+            float w, h;
+            UiScale.Apply(out w, out h);
             bool hudScreen = Hud.Instance != null && Hud.Instance.AnyScreenOpen;
             if (hudScreen) return;
             if (!IsOpen)
             {
-                if (!Hud.SideMenuOpen) { LevelBar(); AbilityBar(w, h); }
+                // On touch screens the ability buttons are part of the touch controls instead.
+                if (!Hud.SideMenuOpen) { LevelBar(); if (!TouchControls.Active) AbilityBar(w, h); }
                 return;
             }
             SkillsScreen(w, h);
@@ -104,12 +106,13 @@ namespace Hollowmark.UI
         void LevelBar()
         {
             var p = H.Stats.Progress;
-            GUI.Label(new Rect(16, 72, 70, 20), "<b>Level " + p.Level + "</b>", small);
-            Bar(new Rect(86, 77, 130, 10), p.MaxLevel ? 1f : p.Xp / p.XpToNext, new Color(0.62f, 0.45f, 0.95f));
-            string pts = p.Points > 0 ? "  <color=#ffd040>" + p.Points + " skill point" + (p.Points == 1 ? "" : "s") + ": press K</color>" : "  K skills";
-            GUI.Label(new Rect(222, 72, 360, 20), (p.MaxLevel ? "MAX" : string.Format("{0:0}/{1:0} XP", p.Xp, p.XpToNext)) + pts, small);
-            if (Time.time < p.WarCryUntil) GUI.Label(new Rect(16, 92, 400, 20), string.Format("<color=#ff8060>Battle Cry {0:0}s</color>", p.WarCryUntil - Time.time), small);
-            else if (Time.time < p.DeadEyeUntil) GUI.Label(new Rect(16, 92, 400, 20), string.Format("<color=#ffd040>Dead-Eye ready ({0:0}s)</color>", p.DeadEyeUntil - Time.time), small);
+            float L = UiScale.Left, T = UiScale.Top;
+            GUI.Label(new Rect(L + 16, T + 72, 70, 20), "<b>Level " + p.Level + "</b>", small);
+            Bar(new Rect(L + 86, T + 77, 130, 10), p.MaxLevel ? 1f : p.Xp / p.XpToNext, new Color(0.62f, 0.45f, 0.95f));
+            string pts = p.Points > 0 ? "  <color=#ffd040>" + p.Points + " skill point" + (p.Points == 1 ? "" : "s") + (TouchControls.Active ? ": tap Skills</color>" : ": press K</color>") : (TouchControls.Active ? "" : "  K skills");
+            GUI.Label(new Rect(L + 222, T + 72, 360, 20), (p.MaxLevel ? "MAX" : string.Format("{0:0}/{1:0} XP", p.Xp, p.XpToNext)) + pts, small);
+            if (Time.time < p.WarCryUntil) GUI.Label(new Rect(L + 16, T + 92, 400, 20), string.Format("<color=#ff8060>Battle Cry {0:0}s</color>", p.WarCryUntil - Time.time), small);
+            else if (Time.time < p.DeadEyeUntil) GUI.Label(new Rect(L + 16, T + 92, 400, 20), string.Format("<color=#ffd040>Dead-Eye ready ({0:0}s)</color>", p.DeadEyeUntil - Time.time), small);
         }
 
         void AbilityBar(float w, float h)
